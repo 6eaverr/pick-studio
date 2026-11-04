@@ -8,12 +8,22 @@
     "start": "node --env-file-if-exists=.env server.mjs",
     "dev": "node --watch --env-file-if-exists=.env server.mjs",
     "legacy": "node legacy/server.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:check": "node --env-file-if-exists=.env scripts/db-check.mjs",
+    "db:import": "node --env-file-if-exists=.env scripts/migrate-json.mjs",
+    "postinstall": "prisma generate"
   },
   "engines": {
     "node": ">=22.9"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
   }
 }

@@ -1,0 +1,90 @@
+// PICK Studio 데이터 모델 (Supabase PostgreSQL)
+// User 1:N Magazine, Magazine 1:N Card, Magazine 1:N Source
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // 앱 실행용: Supabase Transaction pooler (6543, ?pgbouncer=true)
+  directUrl = env("DIRECT_URL") // 마이그레이션용: Session pooler 또는 Direct (5432)
+}
+
+enum MagazineType {
+  CURATION
+  ISSUE
+}
+
+enum MagazineStatus {
+  DRAFT
+  REVIEW
+  APPROVED
+  PUBLISHED
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique
+  password  String // bcrypt 해시만 저장
+  nickname  String
+  createdAt DateTime   @default(now())
+  magazines Magazine[]
+
+  @@map("users")
+}
+
+model Magazine {
+  id        Int            @id @default(autoincrement())
+  title     String         @db.VarChar(60)
+  keyword   String
+  type      MagazineType   @default(CURATION)
+  template  String         @default("classic") // 템플릿 6종 id 또는 classic
+  status    MagazineStatus @default(DRAFT)
+  caption   String         @default("")
+  // 렌더러(drawCard)가 기존과 같은 카드를 그리는 데 필요한 값
+  theme     String         @default("paper") // paper | midnight | cobalt
+  category  String         @default("MUSIC CURATION") // 카드 머리글 라벨
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  authorId Int
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  cards    Card[]
+  sources  Source[]
+
+  @@index([authorId])
+  @@index([status])
+  @@map("magazines")
+}
+
+model Card {
+  id       Int     @id @default(autoincrement())
+  order    Int
+  label    String  @default("")
+  headline String
+  body     String  @default("")
+  footer   String  @default("")
+  photoUrl String?
+  layout   String  @default("story") // cover | story | type | end (렌더러용)
+
+  magazineId Int
+  magazine   Magazine @relation(fields: [magazineId], references: [id], onDelete: Cascade)
+
+  @@index([magazineId, order])
+  @@map("cards")
+}
+
+model Source {
+  id       Int     @id @default(autoincrement())
+  outlet   String
+  title    String
+  url      String
+  verified Boolean @default(false)
+
+  magazineId Int
+  magazine   Magazine @relation(fields: [magazineId], references: [id], onDelete: Cascade)
+
+  @@index([magazineId])
+  @@map("sources")
+}
