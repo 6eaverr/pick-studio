@@ -2,15 +2,15 @@ import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync,openSync,closeSync } from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-const root=path.dirname(fileURLToPath(import.meta.url));
-const url=`http://127.0.0.1:${Number(process.env.PICK_PORT)||4317}`;
+const here=path.dirname(fileURLToPath(import.meta.url)),root=path.join(here,'..');
+const url=`http://127.0.0.1:${Number(process.env.PICK_PORT)||4318}`;
 if(Number(process.versions.node.split('.')[0])<22){console.error('Node.js 22 or later is required. Install it from https://nodejs.org/');process.exit(1);}
 console.log('Starting PICK Studio...');
 async function running(){try{const r=await fetch(url,{signal:AbortSignal.timeout(1200)});return r.ok&&(await r.text()).includes('PICK Studio');}catch{return false;}}
 if(!await running()){
   mkdirSync(path.join(root,'data'),{recursive:true});const log=openSync(path.join(root,'data','server.log'),'a');
   let startError;
-  const child=spawn(process.execPath,[path.join(root,'server.mjs')],{cwd:root,detached:true,windowsHide:true,stdio:['ignore',log,log]});
+  const child=spawn(process.execPath,[path.join(here,'server.mjs')],{cwd:root,detached:true,windowsHide:true,stdio:['ignore',log,log]});
   child.on('error',e=>{startError=e;});child.unref();closeSync(log);
   for(let i=0;i<30&&!startError&&!await running();i++)await new Promise(r=>setTimeout(r,300));
   if(startError)console.error(startError.message);

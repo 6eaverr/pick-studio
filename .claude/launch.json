@@ -1,6 +1,22 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "pick-studio", "runtimeExecutable": "node", "runtimeArgs": ["server.mjs"], "port": 4317 }
+    {
+      "name": "pick-studio",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--env-file-if-exists=.env",
+        "server.mjs"
+      ],
+      "port": 4317
+    },
+    {
+      "name": "pick-legacy",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "legacy/server.mjs"
+      ],
+      "port": 4318
+    }
   ]
 }

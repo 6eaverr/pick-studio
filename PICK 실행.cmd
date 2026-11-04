@@ -16,8 +16,8 @@ goto failed
 echo Could not open the PICK folder. Extract the entire ZIP first.
 goto failed
 :run
-if not exist "launcher.mjs" goto missing_files
-"%PICK_NODE%" "launcher.mjs" %*
+if not exist "legacy\launcher.mjs" goto missing_files
+"%PICK_NODE%" "legacy\launcher.mjs" %*
 if errorlevel 1 goto failed
 popd
 exit /b 0

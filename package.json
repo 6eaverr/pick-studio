@@ -1,9 +1,19 @@
 {
   "name": "pick-studio",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "PICK 매거진 Windows 카드뉴스 편집실",
-  "scripts": { "start": "node server.mjs", "test": "node --test tests/*.test.mjs" },
-  "engines": { "node": ">=22" }
+  "description": "PICK 매거진 카드뉴스 다중 사용자 웹 서비스 (고급웹프로그래밍 기말 프로젝트)",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "dev": "node --watch --env-file-if-exists=.env server.mjs",
+    "legacy": "node legacy/server.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=22.9"
+  },
+  "dependencies": {
+    "express": "^5.3.0"
+  }
 }
