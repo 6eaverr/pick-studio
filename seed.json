@@ -1,0 +1,138 @@
+{
+  "keyword": "검정치마의 사랑노래",
+  "category": "MUSIC CURATION",
+  "theme": "midnight",
+  "caption": "‘EVERYTHING’에서 멈췄다면, 두 곡만 더.\n\n검정치마의 사랑노래를 한 곡만 알고 있었다면, 오늘은 ‘나랑 아니면’과 ‘Love Is All’까지 이어 들어보세요. 세 곡은 모두 TEAM BABY에 담겨 있습니다.\n\n함께 있기 → 붙잡기 → 받아들이기. PICK이 골라본 세 가지 마음입니다. 말이 줄어도 편안한 밤, 차마 보내지 못한 노래, 단점까지 좋아지는 순간. 지금의 여러분과 가장 가까운 곡은 무엇인가요?\n\n딱 한 곡만 보낸다면 어떤 곡인지 댓글로 남겨주세요. 당장 보내기 망설여지면 저장해두었다가 꺼내 들어도 좋고요.\n\n※ 마음별 구분은 PICK의 감상이며 아티스트가 직접 설명한 의미가 아닙니다.\n앨범·수록곡 정보: 한국대중음악상 / Apple Music\nhttps://koreanmusicawards.com/project/검정치마-team-baby-2/\nhttps://music.apple.com/us/album/team-baby/1242154383\n사진: TEAM BABY 아트워크 · DOGGYRICH FOREVER / BESPOK. · Apple Music\n\n#pick매거진 #검정치마 #사랑노래 #TEAMBABY #음악추천",
+  "cards": [
+    {
+      "label": "검정치마의 사랑노래",
+      "title": "‘EVERYTHING’에서\n멈췄다면,\n두 곡만 더.",
+      "body": "검정치마의 사랑노래 3곡.\n지금 떠오르는 그 사람에게.",
+      "note": "아는 한 곡에서 시작해요 →",
+      "sourceIds": [
+        "s1",
+        "s2"
+      ],
+      "image": "/assets/team-baby.webp",
+      "imageCredit": "TEAM BABY 아트워크 · DOGGYRICH FOREVER / BESPOK. · Apple Music",
+      "imageSource": "https://music.apple.com/us/album/team-baby/1242154383",
+      "imageRightsConfirmed": false,
+      "layout": "cover"
+    },
+    {
+      "label": "ONE ALBUM, THREE MOMENTS",
+      "title": "같은 앨범인데,\n사랑의 표정은 다르다",
+      "body": "세 곡은 모두 2017년의 TEAM BABY에 담겨 있다.\n함께 있기, 붙잡기, 받아들이기.\nPICK은 세 가지 마음으로 이 노래들을 골랐다.",
+      "note": "먼저, 익숙한 그 노래부터 →",
+      "sourceIds": [
+        "s1",
+        "s2"
+      ],
+      "image": "/assets/team-baby.webp",
+      "imageCredit": "TEAM BABY 아트워크 · DOGGYRICH FOREVER / BESPOK. · Apple Music",
+      "imageSource": "https://music.apple.com/us/album/team-baby/1242154383",
+      "imageRightsConfirmed": false,
+      "layout": "story"
+    },
+    {
+      "label": "TRACK 01 / EVERYTHING",
+      "title": "말이 줄어도,\n마음은 선명한 밤",
+      "body": "나란히 앉아 아무 말도 하지 않아도 되는 사이.\n그 조용한 장면에 PICK이 고른 첫 곡은 EVERYTHING.",
+      "note": "PICK의 감상 · 다음은 붙잡고 싶은 마음 →",
+      "sourceIds": [
+        "s2",
+        "s3"
+      ],
+      "image": "",
+      "imageCredit": "",
+      "imageSource": "",
+      "imageRightsConfirmed": false,
+      "layout": "type"
+    },
+    {
+      "label": "TRACK 02 / 나랑 아니면",
+      "title": "보내고 싶은데,\n차마 못 보낸 노래",
+      "body": "제목부터 마음을 건드리는 ‘나랑 아니면’.\nPICK은 이 곡을, 아직 끝내지 못한 대화 옆에 두고 싶다.",
+      "note": "PICK의 감상 · 마지막은 있는 그대로의 사랑 →",
+      "sourceIds": [
+        "s1",
+        "s2"
+      ],
+      "image": "/assets/team-baby.webp",
+      "imageCredit": "TEAM BABY 아트워크 · DOGGYRICH FOREVER / BESPOK. · Apple Music",
+      "imageSource": "https://music.apple.com/us/album/team-baby/1242154383",
+      "imageRightsConfirmed": false,
+      "layout": "story"
+    },
+    {
+      "label": "TRACK 03 / LOVE IS ALL",
+      "title": "그 사람의 단점도\n좋아진 적 있다면",
+      "body": "완벽한 사람보다 같이 있고 싶은 사람이 떠오를 때.\n‘Love Is All’을 세 번째 곡으로 이어 들어보자.",
+      "note": "PICK의 감상 · 당신은 어느 곡에 가까운가요?",
+      "sourceIds": [
+        "s2",
+        "s4"
+      ],
+      "image": "",
+      "imageCredit": "",
+      "imageSource": "",
+      "imageRightsConfirmed": false,
+      "layout": "type"
+    },
+    {
+      "label": "YOUR TURN",
+      "title": "딱 한 곡만 보낸다면,\n당신의 선택은?",
+      "body": "01  EVERYTHING\n02  나랑 아니면\n03  Love Is All\n\n보내기 망설여지면, 우선 저장해두기.",
+      "note": "댓글에 한 곡만 남겨주세요 · @_pick.kr",
+      "sourceIds": [
+        "s2"
+      ],
+      "image": "",
+      "imageCredit": "",
+      "imageSource": "",
+      "imageRightsConfirmed": false,
+      "layout": "end"
+    }
+  ],
+  "sources": [
+    {
+      "id": "s1",
+      "title": "검정치마 [TEAM BABY]",
+      "url": "https://koreanmusicawards.com/project/%EA%B2%80%EC%A0%95%EC%B9%98%EB%A7%88-team-baby-2/",
+      "publisher": "한국대중음악상",
+      "date": "2018",
+      "evidence": "앨범 발매일 2017.05.30, 대표곡 나랑 아니면, 프로듀서 검정치마 확인. 선정위원의 리뷰는 아티스트 본인의 발언이 아님."
+    },
+    {
+      "id": "s2",
+      "title": "TEAM BABY — The Black Skirts",
+      "url": "https://music.apple.com/us/album/team-baby/1242154383",
+      "publisher": "Apple Music",
+      "date": "2017-05-30",
+      "evidence": "공식 음원 유통 앨범 페이지에서 세 곡의 수록 정보 확인. 감정별 추천은 PICK 에디터의 해석."
+    },
+    {
+      "id": "s3",
+      "title": "EVERYTHING — 공식 아티스트 채널 음원",
+      "url": "https://www.youtube.com/watch?v=jb1FCdkadlo",
+      "publisher": "The Black Skirts / YG PLUS",
+      "date": "2021-01-18",
+      "evidence": "공식 아티스트 채널의 유통 음원 설명. 싱글 발매일은 2016-01-29로, 영상 업로드 날짜와 다름."
+    },
+    {
+      "id": "s4",
+      "title": "Love Is All — 공식 아티스트 채널 음원",
+      "url": "https://www.youtube.com/watch?v=lOSF2vQDPiQ",
+      "publisher": "The Black Skirts / YG PLUS",
+      "date": "2021-01-18",
+      "evidence": "YG PLUS 제공 음원 설명에서 TEAM BABY 수록곡 및 발매일 2017-05-30 확인."
+    }
+  ],
+  "imageCandidates": [
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/be/ce/5c/bece5cff-2caf-6d8a-9c21-3035537d2a4d/Album_cover_1400X1400.jpg/592x592bb.webp",
+      "sourceUrl": "https://music.apple.com/us/album/team-baby/1242154383",
+      "credit": "TEAM BABY 아트워크 · Apple Music"
+    }
+  ]
+}

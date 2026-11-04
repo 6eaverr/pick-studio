@@ -1,0 +1,18 @@
+# 의존성
+node_modules/
+
+# 비밀 정보 (DB 접속·세션 시크릿)
+.env
+.env.*
+!.env.example
+
+# 로컬 데이터·로그·내보내기
+data/
+*.log
+
+# 백업·참고용 사본
+backup/
+Claude 채팅용 자료/
+
+# 개인 설정
+.claude/settings.local.json
