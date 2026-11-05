@@ -29,13 +29,17 @@ export function drawMagazineCard(canvas, magazine, index = 0) {
 }
 
 // 모든 카드를 순서대로 그려 canvas 배열로. onPage(i, canvas) 로 한 장씩 다 그릴 때마다 알려 줌(먼저 보여 주기용)
-export async function drawAllCards(magazine, onPage) {
+// strict: 내보내기용. 사진을 못 불러오거나 글이 넘치면 대신 그리지 않고 오류를 던집니다.
+export async function drawAllCards(magazine, onPage, { strict = false } = {}) {
   const content = toContent(magazine);
   const pages = [];
   for (let i = 0; i < content.cards.length; i++) {
     const c = document.createElement('canvas');
     c.setAttribute('aria-label', `${i + 1}번째 카드`);
-    pages.push(await drawContentCard(c, content, i));
+    if (strict) {
+      try { await drawCard(c, content, i); } catch (err) { throw new Error(`${i + 1}번 카드를 그리지 못했습니다: ${err.message}`); }
+    } else await drawContentCard(c, content, i);
+    pages.push(c);
     onPage?.(i, c);
   }
   return pages;

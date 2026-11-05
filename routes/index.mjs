@@ -4,6 +4,7 @@ import authRoutes from './auth.routes.mjs';
 import magazineRoutes from './magazine.routes.mjs';
 import cardRoutes from './card.routes.mjs';
 import sourceRoutes from './source.routes.mjs';
+import uploadRoutes from './upload.routes.mjs';
 
 // 경로 연결만 담당합니다. 로직은 controllers/, DB 접근은 services/ 에 둡니다.
 const router = Router();
@@ -13,5 +14,6 @@ router.use('/auth', authRoutes);
 router.use('/api/magazines', magazineRoutes);
 router.use('/api/cards', cardRoutes);
 router.use('/api/sources', sourceRoutes);
+router.use('/api/uploads', uploadRoutes);
 
 export default router;

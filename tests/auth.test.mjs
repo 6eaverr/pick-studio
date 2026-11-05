@@ -102,3 +102,9 @@ test('로그인 없이 보호된 화면 → /login.html?next=원래주소', asyn
 test('로그인·회원가입 화면은 로그인 없이 열림', async () => {
   for (const p of ['/login.html', '/signup.html']) assert.equal((await page(p)).status, 200, p);
 });
+
+test('사진 업로드·내보내기도 로그인 필요 → 401', async () => {
+  const up = await fetch(`${base}/api/uploads`, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: Buffer.from([0xff, 0xd8, 0xff]) });
+  assert.equal(up.status, 401);
+  assert.equal((await post('/api/magazines/1/export', { images: [] })).status, 401);
+});
