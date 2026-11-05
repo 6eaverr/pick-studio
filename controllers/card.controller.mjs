@@ -4,7 +4,7 @@ import { CARD_RULES } from '../validators/magazine.validator.mjs';
 
 const CARD_FIELDS = Object.keys(CARD_RULES);
 
-// 응답의 magazine 은 { id, status, updatedAt } (5단계부터 승인 상태가 되돌아가면 화면이 바로 알 수 있게)
+// 응답의 magazine 은 { id, status, updatedAt, reverted } — 승인 상태가 REVIEW 로 되돌아가면 화면이 바로 알 수 있게
 
 // POST /api/magazines/:id/cards → 201 (맨 뒤에 추가)
 export async function create(req, res) {

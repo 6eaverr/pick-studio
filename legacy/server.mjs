@@ -169,6 +169,7 @@ async function route(req,res){
   let file;
   if(route.startsWith('/assets/')&&/^\/assets\/[\w.-]+$/.test(route)){file=path.join(ASSETS,path.basename(route));if(!existsSync(file))file=path.join(ROOT,'public',route);}
   else if(/^\/vendor\/mediapipe\/(wasm\/)?[\w.-]+$/.test(route))file=path.join(ROOT,'public',...route.split('/').filter(Boolean));
+  else if(route==='/shared/voice.js')file=path.join(ROOT,'shared','voice.js'); // 기말 개편: 말투 검사기를 shared/로 이동
   else if(/^\/exports\/[\w-]+\/PICK\.zip$/.test(route)){file=path.join(EXPORT,...route.split('/').slice(2));res.setHeader('Content-Disposition','attachment; filename="PICK.zip"');}
   else if(['/','/index.html','/app.js','/style.css','/renderer.js','/templates.js','/template-renderer.js','/template-gallery.js','/templates.html','/figma-export.js','/focus.js','/voice.js','/insta-ui.js'].includes(route))file=path.join(ROOT,'public',route==='/'?'index.html':route);
   if(!file||!existsSync(file))return json(res,{error:'파일을 찾을 수 없습니다.'},404);

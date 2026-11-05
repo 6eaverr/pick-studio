@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {lintText,lintCards,lintScenes,scoreHook,inventedNumbers} from '../public/voice.js';
+import {lintText,lintCards,lintScenes,scoreHook,inventedNumbers} from '../shared/voice.js';
 
 const ids=list=>list.map(x=>x.id);
 

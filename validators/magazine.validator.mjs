@@ -93,7 +93,12 @@ export function checkPatchSource({ body = {} }) {
   checkFields(body ?? {}, { verified: SOURCE_RULES.verified });
 }
 
+export function checkStatusChange({ body }) {
+  if (!MAGAZINE_STATUSES.includes(body?.status)) throw invalid(`status 는 ${MAGAZINE_STATUSES.join(', ')} 중 하나여야 합니다.`);
+}
+
 export const validateIdParam = validate(req => { parseId(req.params.id); });
+export const validateStatusChange = validate(checkStatusChange);
 export const validateCreateMagazine = validate(checkCreateMagazine);
 export const validateUpdateMagazine = validate(checkUpdateMagazine);
 export const validateListQuery = validate(checkListQuery);

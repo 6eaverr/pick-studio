@@ -2,10 +2,11 @@ import { Router } from 'express';
 import * as magazine from '../controllers/magazine.controller.mjs';
 import * as card from '../controllers/card.controller.mjs';
 import * as source from '../controllers/source.controller.mjs';
+import * as review from '../controllers/review.controller.mjs';
 import { isLoggedIn, isOwner } from '../middlewares/auth.mjs';
 import {
   validateIdParam, validateListQuery, validateCreateMagazine, validateUpdateMagazine,
-  validateCreateCard, validateReorder, validateCreateSource,
+  validateCreateCard, validateReorder, validateCreateSource, validateStatusChange,
 } from '../validators/magazine.validator.mjs';
 
 // /api/magazines
@@ -20,5 +21,9 @@ router.delete('/:id', isLoggedIn, isOwner('magazine'), magazine.remove);
 router.post('/:id/cards', isLoggedIn, isOwner('magazine'), validateCreateCard, card.create);
 router.patch('/:id/cards/order', isLoggedIn, isOwner('magazine'), validateReorder, card.reorder);
 router.post('/:id/sources', isLoggedIn, isOwner('magazine'), validateCreateSource, source.create);
+
+// 고유 기능: 말투 검사, 검토·승인 흐름
+router.get('/:id/voice', isLoggedIn, validateIdParam, review.voice);
+router.patch('/:id/status', isLoggedIn, isOwner('magazine'), validateStatusChange, review.changeStatus);
 
 export default router;

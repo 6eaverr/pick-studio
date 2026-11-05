@@ -33,6 +33,8 @@ export function createApp({ sessionSecret } = {}) {
   // 정적 파일: 업로드·수집한 카드 사진(data/assets) → 기본 에셋(public/assets) → 화면 파일(public)
   app.use('/assets', express.static(path.join(DATA, 'assets'), { dotfiles: 'ignore', setHeaders: noCache }));
   app.use(express.static(path.join(ROOT, 'public'), { dotfiles: 'ignore', setHeaders: noCache }));
+  // 서버·브라우저 공용 모듈 (말투 검사기, 승인 규칙, DB→원고 변환)
+  app.use('/shared', express.static(path.join(ROOT, 'shared'), { dotfiles: 'ignore', setHeaders: noCache }));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

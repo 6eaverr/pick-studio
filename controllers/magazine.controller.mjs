@@ -43,10 +43,11 @@ export async function create(req, res) {
   res.status(201).location(`/api/magazines/${magazine.id}`).json({ magazine: withOwnership(magazine, req.user) });
 }
 
-// PUT /api/magazines/:id (소유자만)
+// PUT /api/magazines/:id (소유자만) → { magazine, reverted }
+//   APPROVED 상태에서 고치면 REVIEW 로 되돌아가고 reverted=true, PUBLISHED 면 400 PUBLISHED_LOCKED
 export async function update(req, res) {
-  const magazine = await magazines.updateMagazine(req.magazine.id, pick(req.body, MAGAZINE_FIELDS));
-  res.json({ magazine: withOwnership(magazine, req.user) });
+  const { magazine, reverted } = await magazines.updateMagazine(req.magazine.id, pick(req.body, MAGAZINE_FIELDS));
+  res.json({ magazine: withOwnership(magazine, req.user), reverted });
 }
 
 // DELETE /api/magazines/:id (소유자만) → 204
