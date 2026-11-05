@@ -5,7 +5,7 @@ import { createApp } from '../app.mjs';
 // 실제 HTTP로 앱을 띄워 확인합니다(빈 포트 자동 선택).
 let server, base;
 before(async () => {
-  server = createApp().listen(0, '127.0.0.1');
+  server = createApp({ sessionSecret: 'test-secret' }).listen(0, '127.0.0.1');
   await new Promise(r => server.once('listening', r));
   base = `http://127.0.0.1:${server.address().port}`;
 });
