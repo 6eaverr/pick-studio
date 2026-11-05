@@ -14,7 +14,8 @@
     "db:studio": "prisma studio",
     "db:check": "node --env-file-if-exists=.env scripts/db-check.mjs",
     "db:import": "node --env-file-if-exists=.env scripts/migrate-json.mjs",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:password": "node scripts/set-db-password.mjs"
   },
   "engines": {
     "node": ">=22.9"
