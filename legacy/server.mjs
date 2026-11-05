@@ -171,7 +171,7 @@ async function route(req,res){
   else if(/^\/vendor\/mediapipe\/(wasm\/)?[\w.-]+$/.test(route))file=path.join(ROOT,'public',...route.split('/').filter(Boolean));
   else if(route==='/shared/voice.js')file=path.join(ROOT,'shared','voice.js'); // 기말 개편: 말투 검사기를 shared/로 이동
   else if(/^\/exports\/[\w-]+\/PICK\.zip$/.test(route)){file=path.join(EXPORT,...route.split('/').slice(2));res.setHeader('Content-Disposition','attachment; filename="PICK.zip"');}
-  else if(['/','/index.html','/app.js','/style.css','/renderer.js','/templates.js','/template-renderer.js','/template-gallery.js','/templates.html','/figma-export.js','/focus.js','/voice.js','/insta-ui.js'].includes(route))file=path.join(ROOT,'public',route==='/'?'index.html':route);
+  else if(['/','/index.html','/app.js','/style.css','/renderer.js','/templates.js','/template-renderer.js','/template-gallery.js','/templates.html','/figma-export.js','/focus.js','/voice.js','/insta-ui.js'].includes(route))file=path.join(ROOT,['/','/index.html','/app.js','/insta-ui.js'].includes(route)?'legacy/public':'public',route==='/'?'index.html':route); // 기말 개편: 이전 화면 전용 파일은 legacy/public
   if(!file||!existsSync(file))return json(res,{error:'파일을 찾을 수 없습니다.'},404);
   res.setHeader('Content-Type',MIME[path.extname(file)]||'application/octet-stream');res.setHeader('Cache-Control','no-cache');res.end(readFileSync(file));
 }

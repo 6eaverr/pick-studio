@@ -6,6 +6,7 @@ import { securityHeaders, sameOrigin } from './middlewares/security.mjs';
 import { notFoundHandler, errorHandler } from './middlewares/error.mjs';
 import { createSession } from './config/session.mjs';
 import { configurePassport } from './config/passport.mjs';
+import { pageGuard } from './middlewares/pages.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const DATA = process.env.PICK_DATA_DIR || path.join(ROOT, 'data');
@@ -26,6 +27,9 @@ export function createApp({ sessionSecret } = {}) {
   app.use(createSession({ secret: sessionSecret ?? process.env.SESSION_SECRET }));
   app.use(passport.initialize());
   app.use(passport.session());
+
+  // 화면 접근 제어 (로그인 안 됐으면 로그인 화면으로)
+  app.use(pageGuard);
 
   // API
   app.use(routes);

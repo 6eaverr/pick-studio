@@ -81,3 +81,24 @@ test('POST /auth/signup 잘못된 입력 → 400 VALIDATION_ERROR, 세션 쿠키
   assert.equal((await r.json()).code, 'VALIDATION_ERROR');
   assert.equal(r.headers.get('set-cookie'), null);
 });
+
+// ── 화면 접근 제어 ──
+const page = path => fetch(base + path, { redirect: 'manual' });
+
+test('로그인 없이 / → 로그인 화면으로 이동', async () => {
+  const r = await page('/');
+  assert.equal(r.status, 302);
+  assert.equal(r.headers.get('location'), '/login.html');
+});
+
+test('로그인 없이 보호된 화면 → /login.html?next=원래주소', async () => {
+  for (const p of ['/magazines.html?status=REVIEW', '/magazine.html?id=3', '/edit.html', '/review.html?id=1', '/export.html?id=1']) {
+    const r = await page(p);
+    assert.equal(r.status, 302, p);
+    assert.equal(r.headers.get('location'), `/login.html?next=${encodeURIComponent(p)}`);
+  }
+});
+
+test('로그인·회원가입 화면은 로그인 없이 열림', async () => {
+  for (const p of ['/login.html', '/signup.html']) assert.equal((await page(p)).status, 200, p);
+});

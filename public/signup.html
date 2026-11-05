@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>회원가입 · PICK Studio</title>
+  <link rel="icon" href="/assets/pick-logo.jpg">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/css/studio.css">
+</head>
+<body class="auth-body">
+  <main class="auth-card panel">
+    <a class="brand" href="/login.html" aria-label="PICK Studio"><span class="ring"><img src="/assets/pick-logo.jpg" alt="PICK 로고"></span><span>pick<span class="brand-dot">.</span><small>EDITORIAL STUDIO</small></span></a>
+    <h1>회원가입</h1>
+    <p class="lead">가입하면 바로 매거진을 만들 수 있어요.</p>
+    <form id="signupForm" novalidate>
+      <p class="form-error" id="formError" role="alert" hidden></p>
+      <label class="field">이메일
+        <input id="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com">
+      </label>
+      <label class="field">닉네임
+        <input id="nickname" autocomplete="nickname" required maxlength="20" placeholder="1~20자">
+      </label>
+      <label class="field">비밀번호
+        <input id="password" type="password" autocomplete="new-password" required minlength="8">
+        <small>8자 이상</small>
+      </label>
+      <label class="field">비밀번호 확인
+        <input id="password2" type="password" autocomplete="new-password" required minlength="8">
+      </label>
+      <button class="primary" type="submit" id="submitBtn">가입하기</button>
+    </form>
+    <p class="switch">이미 계정이 있나요? <a href="/login.html" id="loginLink">로그인</a></p>
+  </main>
+  <script type="module" src="/js/signup.js"></script>
+</body>
+</html>
