@@ -1,151 +1,260 @@
-# PICK Studio
+# PICK Studio — 음악 카드뉴스 매거진 다중 사용자 웹 서비스
 
-Windows에서 쓰는 음악 카드뉴스 편집 프로그램입니다. `PICK 실행.cmd`를 더블클릭하면 독립 Edge 앱 창으로 열립니다. 현재 PC의 Node.js 24를 사용하며 추가 패키지 설치는 없습니다. 다른 PC에서는 Node.js 22 이상이 필요합니다.
+고급웹프로그래밍 기말 프로젝트. 1인용 로컬 편집 프로그램이던 PICK Studio(인스타그램 음악 매거진 카드뉴스 편집실)를 **여러 사용자가 가입해 각자 매거진을 만들고, 검토·승인 후 카드 이미지를 내보내는 웹 서비스**로 바꿨습니다.
 
-## 포함된 기능
+- 서버: Node.js 22+ · Express 5 (routes / controllers / services / middlewares / validators 분리)
+- DB: Prisma 6 + Supabase(PostgreSQL)
+- 인증: passport-local + express-session, 비밀번호는 bcrypt 해시
+- 화면: HTML · CSS · JavaScript(React 없음). 모든 데이터는 `fetch` 로 API 를 불러와 그립니다.
+- 고유 기능: **AI 말투 검사기**, **검토·승인 흐름(서버가 규칙 강제)**, **Canvas 카드 이미지 ZIP 내보내기**, (확장) **AI 원고 생성**
 
-- 6종 템플릿: 커버 스토리 / 뮤직 브리핑 / 앨범 노트 / 셀렉트 리스트 / 씬 아카이브 / 라이브 가이드
-- 상단 ‘새 원고 스타일’ 선택 → 키워드 입력 → 조사하고 만들기. 선택한 디자인과 이야기 흐름으로 생성합니다.
-- ‘템플릿 6종 보기 · 디자인 변경’에서 표지·본문·마무리를 미리 보고 현재 원고 전체에 적용합니다. 문구는 유지되고 디자인이 변경되며, 승인은 해제됩니다.
-- ‘한눈에 비교’에서 6종 표지와 모든 예시 카드를 확인할 수 있습니다. 사진이 없으면 추상 그래픽이 표시됩니다.
+---
 
-- 키워드별 Codex 웹 조사 및 3~10장 원고 생성(화면 기본 6장), 사진 후보 자동 수집·가져오기
-- ChatGPT/Gemini에서 작성한 JSON 원고 가져오기 및 조사 요청문 복사
-- 실제 @_pick.kr 프로필 로고, 4:5(1080×1350) 카드, 3가지 색상, 4가지 레이아웃
-- 제목·본문·사진·출처·캡션 편집, 자동 저장, 보관함, 복제
-- 카드별 출처 연결, 사진 사용 조건 확인, 버전별 승인
-- JPG 카드와 caption.txt, sources.json, project.json을 ZIP으로 저장
-- Meta API 게시 어댑터: 승인된 JPEG 해시 확인, 캐러셀 게시, 중복 요청 차단, 불확실한 결과 재게시 차단
+## 1. 실행 방법
 
-## 첫 실행
+### 준비물
+- Node.js **22.9 이상** (개발: 24)
+- Supabase 프로젝트 1개 (무료 플랜으로 충분)
 
-1. `PICK 실행.cmd`를 실행합니다. 현재 PC에서만 접속하는 `http://127.0.0.1:4317` 서버가 열립니다.
-2. 검정치마의 사랑노래 시안이 기본으로 들어 있습니다. 최신 뉴스가 아닌 에디터 큐레이션입니다. 감상은 아티스트의 발언과 구분했습니다.
-3. 사진·출처·캡션을 검토합니다. 공식 앨범 표지는 미리보기용으로 수집했으며 게시 재사용 허가는 확인되지 않았습니다. 본인이 사용 조건을 확인하거나 허가된 사진으로 교체하세요. 사진 없이 타이포그래피 카드도 만들 수 있습니다.
-4. 검토·승인 → 게시 패키지 저장으로 6장 이미지를 저장합니다. 실제 Instagram 게시를 자동 실행하지 않습니다.
+### 1) 설치
+```bash
+npm install
+```
+`postinstall` 에서 `prisma generate` 가 함께 실행됩니다.
 
-## AI 연결
+### 2) `.env` 만들기
+`.env.example` 을 `.env` 로 복사한 뒤 값을 채웁니다. **`.env` 는 `.gitignore` 에 들어 있어 커밋되지 않습니다.**
 
-`AI 연결.cmd`에서 ChatGPT 계정으로 한 번 로그인한 뒤 앱의 연결 설정을 새로고침하세요. 현재 개발 시점에는 CLI 로그인 미완료 상태입니다. 실계정 자동 생성은 아직 검증되지 않았습니다.
-
-Codex CLI의 `codex exec` 비대화형 실행과 웹 검색을 사용합니다. 구독의 Codex 사용량 한도가 적용됩니다. API 키 인증이 감지되면 예상치 못한 별도 비용을 피하기 위해 생성 요청을 중단합니다. 현재 설정된 모델을 사용하며 모델을 임의로 고정하지 않습니다. 설치 경로를 자동 발견하지 못하면 `PICK_CODEX_PATH`에 codex.exe 전체 경로를 설정합니다.
-
-원고 생성은 읽기 전용 샌드박스에서 실행되며, 프롬프트는 원문을 명령이 아닌 조사 자료로 취급하고 웹 조사만 수행하도록 지시합니다. AI가 링크를 제시했다는 이유만으로 사실 검증 완료로 처리하지 않습니다. 새로 생성한 원고와 사진은 항상 초안 상태입니다.
-
-### Claude 연결 — 2026-09-23 추가
-
-모델 선택에서 Claude Opus / Sonnet / Haiku를 고를 수 있습니다. Claude Code CLI(`claude -p`)를 비대화형으로 실행하며, 웹 검색(WebSearch·WebFetch) 도구만 허용하고 구조화 출력(`--json-schema`)으로 원고를 받습니다. Claude 구독 로그인(`claude auth login`)만 사용하며, 예상치 못한 API 과금을 막기 위해 실행 시 `ANTHROPIC_API_KEY` 환경 변수를 제거합니다. 구독이 아닌 방식으로 연결돼 있으면 생성을 중단합니다. 설치 경로를 찾지 못하면 `PICK_CLAUDE_PATH`에 claude.exe 전체 경로를 설정하세요. 모델 별칭(opus/sonnet/haiku)은 계정에서 사용 가능한 최신 모델로 연결됩니다.
-
-### v4 — 2026-10-01 · 조회수·말투 개편 (PICK Reels와 공통)
-
-문제: AI 말투가 티 나고(발매일·크레딧 나열, “~해보세요”, 면책 문구, 억지 밈), 무슨 말인지 흐릿하고, 표지가 약해서 조회수가 안 나옴.
-
-- **각도 먼저**: 원고를 쓰기 전에 “누가, 어떤 순간에, 왜 저장·공유하나”를 한 문장으로 정합니다(`angle`). 표지 카드 원고 탭 맨 위에 표시.
-- **표지 후보 5개**: 서로 다른 후킹 공식으로 쓰고 가장 강한 것을 표지에. 원고 탭에서 눌러 바꿉니다. 후보마다 점수 표시. 제목에서 `[대괄호]`로 감싼 줄은 강조색으로 나옵니다.
-- **표지 디자인**: 사진이 있으면 6종 템플릿 모두 ‘선명한 전면 사진(얼굴이 제목에 가리지 않게 자름) + 큰 2색 제목 + 작은 키커’ 구조. 흐린 배경, SELECT·SAVE FOR LATER 같은 장식, 표지 설명문·하단 문구를 없앴습니다. 템플릿별 차이는 강조색과 마감(글자 얹기 / 색 띠).
-- **PICK 말투 기준 + 말투 검사기**(`public/voice.js`): 친구에게 DM 보내는 말투. 광고식 권유, 예고하는 소개문, 빈 수식어, ‘결·온도·여운’ 같은 뜬 비유, 번역투, 면책 문구, 발매일·크레딧 나열, 긴 본문, 제목↔본문·장↔장 중복, 전부 ‘~요’로 끝나는 문장을 카드마다 표시하고 고치는 법을 알려줍니다. 원고 전체 점수(0~100).
-- **셀프 리뷰 v2**(`lib/review.mjs`): 검사기가 찾은 곳을 편집장 AI가 고쳐 쓰고 다시 검사, 남으면 한 번 더. 출처에 없는 새 숫자가 들어온 문장은 되돌리고, 곡 카드가 다른 곡 얘기로 바뀌면(사진과 어긋남) 되돌립니다.
-- **✦ AI 말투 다듬기**(원고 탭): 지금 원고를 다시 고쳐 씁니다. 사진·출처 연결은 그대로. ‘되돌리기’ 가능. Claude 구독 필요(1~3분).
-- **레퍼런스 노트**(사이드바, `%LOCALAPPDATA%\PICK\reference-library.json`): 인기 인스타 매거진·릴스·플리의 실제 제목과 첫 문장을 7일마다 스스로 조사해 구조·말투 관찰을 쌓습니다. ‘내가 고른 레퍼런스’에 좋아하는 문구를 붙여넣으면 가장 우선해서 닮습니다. 문구 복제가 아니라 구조·길이·말맛 참고용입니다.
-- **에디터 기억**(`%LOCALAPPDATA%\PICK\editor-memory.json`): 피드백 탭의 메모·평점·성과, AI 초안을 고친 전후 문장, 승인·게시한 최종 문장을 다음 원고에 바로 넣습니다(메모 1개부터 즉시). 기존 ‘학습 현황’의 편집 가이드(원고 3개마다 요약 학습)와 함께 동작합니다.
-- **밈은 선택 사항**: 후킹 강도는 이제 표지를 얼마나 세게 쓰는지를 정합니다. 밈은 그 말을 몰라도 문장이 바로 읽힐 때만(담백 0 / 적당 0~1 / 강하게 0~2).
-- **캡션**: 200~450자, 첫 줄 후킹(표지와 다른 문장) + 카드에 없는 맥락 + 행동 한 줄 + ‘출처:’ 매체명(링크 없음). 면책 문구는 맨 끝 한 줄.
-- 기준: 2026 인스타 도달 신호(DM 공유 > 저장 > 넘겨 본 시간). 2장은 재노출 때 표지 대신 보이므로 혼자서도 후킹이 되게, 마지막 장은 저장할 이유 + ‘보낼 사람을 지정한 공유’.
-- 이전 버전 백업: `backup/2026-10-01-before-v4/`
-
-아래 ‘후킹 강도와 요즘 말투’·‘트렌드 브리핑 · 셀프 리뷰 · 표지 개편’ 항목은 v4에서 위 내용으로 바뀌었습니다(밈 개수 강제 없음).
-
-### 후킹 강도와 요즘 말투
-
-키워드 옆 ‘후킹’ 선택(담백 / 적당 / 강하게)에 따라, AI가 원고를 쓰기 전에 최근 1~3개월 유행어·밈을 웹 검색으로 따로 조사하고 표지 제목·캡션 첫 줄·마지막 질문에 녹입니다(적당: 1~2개, 강하게: 2~4개). 실제로 쓴 유행어는 뜻·사용 위치·유행 근거·확인 링크와 함께 `trends`에 저장되고, 편집실 ‘출처’ 탭 하단에서 확인할 수 있습니다. 밈은 수명이 짧으니 게시 전에 지금도 쓰이는 말인지 확인하세요. 사실 카드는 기존과 같이 원문 확인 정보만 사용합니다.
-
-### 트렌드 브리핑 · 셀프 리뷰 · 표지 개편 — 2026-09-29 추가
-
-- **트렌드 브리핑**(릴스 앱과 공유, `%LOCALAPPDATA%\PICK\trend-brief.json`): Claude가 웹 검색으로 요즘 밈·유행어(뜻·쓰는 법·예문·어울리는 위치·분위기·근거), 쓰지 말 것, 잘 먹히는 후킹 공식, 이번 달 밴드 씬 이슈를 정리. 3일 지나면 앱 시작·생성 때 자동 갱신, 사이드바 ‘트렌드 브리핑’에서 확인·즉시 갱신. 원고 생성 시 여기서 맞는 밈만 표지·캡션 첫 줄·마지막 CTA에 넣고, 사실 문장·감성 곡엔 가벼운 밈 금지.
-- **AI 셀프 리뷰**: 생성 직후 Claude가 2026 매거진·캐러셀 기준표(표지 한 줄, 2장 약속, 장당 한 아이디어, 곡 카드 제목에 곡명, 저장용 요약, 밈 적재적소)로 채점하고 문장을 고쳐 씀. 결과는 생성 배너에 점수·고친 점으로 표시. 리뷰에서 빠진 밈은 사용 기록에서도 제거.
-- **표지·사진**: 표지는 키커 + 큰 헤드라인 + SWIPE →, 본문은 24자 이하 한 줄일 때만. 곡 사진은 대표 썸네일(글자 박힌 디자인) 대신 MV 실제 장면(25/50/75%)을 받고, 생성 직후 얼굴 인식으로 카드마다 인물이 잘 나온 장면, 표지는 전체에서 가장 눈에 띄는 컷을 자동 선택. 사진은 얼굴 중심으로 크롭(MediaPipe, 오프라인).
-
-### Instagram에 올리기 (웹 자동 준비) — 2026-09-24 추가
-
-승인 후 **Instagram에 올리기** → 게시 패키지 자동 저장 → 전용 Edge 창에서 만들기 → 카드 JPG 선택 → 원본 비율 → 다음 → 캡션 입력까지 자동 진행, **‘공유하기’ 직전에 정지**. 사람이 확인 후 공유하기를 누르면 게시 완료를 감지해 원고 상태를 ‘게시 완료’로 바꿉니다. 공개 이미지 주소·Meta 토큰 불필요. 처음 한 번 그 창에서 @_pick.kr 로그인(로그인 대기 최대 10분, 이후 유지). 로그인 정보는 OneDrive 밖 `%LOCALAPPDATA%\PICK Studio\instagram-profile`에 저장. Instagram 화면 구조가 바뀌면 멈춘 단계부터 창에서 직접 이어서 진행하면 됩니다.
-
-### 자기 개선 학습 루프 — 2026-09-24 추가
-
-AI가 원고를 만들면 초안 스냅샷(`origin`)을 보관하고, 에디터의 최종본과 비교합니다. 학습 재료: 제목·본문·캡션 첫 줄 수정 전후, 지워진 유행어, 교체된 사진, 피드백 탭의 평점·메모·게시 성과(저장·좋아요·댓글·공유·도달, 저장을 가장 중요하게 봄). 승인하거나 피드백을 저장한 원고가 3개 쌓일 때마다 Claude(Sonnet, 도구 없음)가 자동으로 **편집 가이드**를 새 버전으로 갱신하고(최대 12개 규칙), 다음 생성부터 프롬프트에 넣습니다. 사이드바 ‘학습 현황’에서 규칙과 근거, 버전별 평균 수정률·평점·저장을 비교하고 이전 버전으로 되돌리거나 가이드를 끌 수 있습니다. 학습 가이드는 사실 확인·출처·가사 인용 금지·사진 권리 규칙, 그리고 매번 고르는 카드 장수·템플릿·후킹 강도보다 우선하지 않습니다. 저장 위치: `data/learning.json`. 학습에는 Claude 구독 사용량이 조금 쓰입니다(1회 약 1분).
-
-### 모든 페이지 배경 사진 — 2026-09-24 추가
-
-자동 생성 시 AI가 키워드 관련 사진을 카드 수 이상(최대 12장, 표지용 사진 우선) 찾고, 서버가 한꺼번에 내려받아 카드마다 다른 사진을 배정합니다. 사진이 카드 수보다 적으면 순서대로 반복합니다. 6종 템플릿과 기본 레이아웃 모두 사진이 있으면 전면 배경으로 쓰며, 사진 액자가 있는 페이지는 흐린 배경 + 선명한 액자, 글자 위주 페이지는 선명한 사진 + 템플릿 색 스크림으로 글자 가독성을 확보합니다. 배경 사진도 게시 전 사용 권한 확인이 필요합니다(승인 단계 체크 그대로).
-
-### Figma로 보내기 — 2026-09-24 추가
-
-미리보기 아래 **Figma로 내보내기**를 누르면 `PICK-figma-<키워드>.json`이 다운로드됩니다. 카드 렌더러의 그리기 순서를 그대로 기록해 글자는 편집 가능한 텍스트 레이어(제목·본문·라벨·하단 문구 이름 자동 지정, 줄별 색상·자간·행간 포함), 카드 사진은 교체 가능한 ‘사진’ 이미지 레이어, 배경·색면·선은 투명 PNG 그래픽 레이어로 나눕니다.
-
-1. 처음 한 번: Figma 데스크톱 앱 → Plugins → Development → Import plugin from manifest… → `figma-plugin\manifest.json`
-2. 매번: Plugins → Development → PICK Studio 가져오기 → JSON 선택 → 카드별 1080×1350 프레임 생성
-
-카드와 같은 글꼴로 보려면 PC에 Pretendard가 설치되어 있어야 합니다. 없으면 Noto Sans KR → 맑은 고딕 → Inter 순으로 대체하며, 대체 글꼴은 폭이 달라 줄 길이가 조금 달라질 수 있습니다. Figma에서 수정한 결과는 PICK으로 되돌아오지 않습니다(단방향).
-
-ChatGPT/Gemini 구독만 사용하고 싶다면 ‘원고 가져오기’ → ‘조사 요청문 복사’ → 해당 서비스에서 검색하여 받은 JSON 붙여넣기 순서로 사용하세요. Gemini 앱 구독을 Gemini API 키로 간주하거나 API 과금을 자동 연결하지 않습니다.
-
-공식 문서: [Codex 인증](https://learn.chatgpt.com/docs/auth), [비대화형 실행과 구조화 출력](https://learn.chatgpt.com/docs/non-interactive-mode).
-
-## Instagram 직접 게시 연결 — 미연결 상태
-
-앱의 게시 어댑터는 구현되어 있지만, 계정 권한과 이미지 호스팅이 없으므로 실제 게시 검증은 하지 않았습니다. 계정 로그인·권한 부여는 계정 소유자가 수행해야 합니다. 비밀번호/토큰을 채팅에 보내지 마세요.
-
-Instagram API with Instagram Login을 기본으로 사용합니다. 프로 계정(Business/Creator), Meta 개발자 앱에서 발급한 게시 권한을 가진 액세스 토큰, Instagram 사용자 ID가 필요합니다. 앱 운영 범위에 따라 Meta 심사/권한이 필요할 수 있습니다. [Meta 공식 Instagram 플랫폼 안내](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/), [콘텐츠 게시 문서](https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/content-publishing)를 확인하세요.
-
-앱의 ‘연결 설정’에서 계정 ID와 액세스 토큰을 입력하면 @_pick.kr 계정인지 확인한 후 연결합니다. 토큰은 서버 실행 중 메모리에만 보관하고 재시작 시 다시 연결합니다. 토큰을 JSON 파일이나 로그에 저장하거나 API 응답으로 반환하지 않습니다. 이 프로젝트 폴더는 OneDrive 안에 있으므로 토큰을 프로젝트 파일에 저장하지 마세요.
-
-고급 사용자는 서버를 시작하는 환경에 아래 값을 설정할 수도 있습니다.
-
-| 환경 변수 | 값 |
-| --- | --- |
-| PICK_INSTAGRAM_TOKEN | 게시 권한 액세스 토큰 |
-| PICK_INSTAGRAM_USER_ID | 프로 계정 Instagram 사용자 ID(숫자) |
-| PICK_GRAPH_VERSION | Meta 앱이 사용하는 Graph API 버전, 기본 v23.0 |
-| PICK_INSTAGRAM_LOGIN | 기본 instagram, Facebook Login 기반 설정은 facebook |
-
-Facebook Login을 사용하면 연결된 Facebook 페이지 및 그 경로에 맞는 게시 권한·페이지 토큰이 필요합니다. [Meta 공식 Postman 문서](https://www.postman.com/meta/instagram/documentation/6yqw8pt/instagram-api)를 참고하세요. 서로 다른 로그인 경로의 토큰을 섞지 마세요.
-
-설정 후 서버를 재시작해야 합니다. 터미널에서 환경 변수를 설정하고 `node server.mjs`로 실행하면 해당 터미널 세션에만 토큰을 둘 수 있습니다. 이미 실행한 서버는 작업 관리자의 해당 `node server.mjs` 프로세스를 종료하거나 포그라운드 실행 터미널에서 Ctrl+C로 종료합니다. 다른 Node 프로그램은 종료하지 마세요.
-
-승인 후 생성한 `data/exports/<콘텐츠 ID>-r<버전>/01.jpg` 등의 JPEG를 본인 HTTPS 스토리지에 원본 그대로 올린 다음, 게시 창에 순서대로 공개 주소를 입력하세요. 자동 호스팅·외부 공개는 이 앱에서 수행하지 않습니다. 공개 파일이 승인본과 바이트 단위로 일치해야 게시됩니다. 자동 압축을 하는 호스트는 맞지 않습니다. 로컬 주소는 Meta에서 읽을 수 없습니다.
-
-게시 요청 후 응답이 끊기면 ‘게시 결과 확인 필요’로 잠그며 임의 재시도하지 않습니다. 앱에서 Meta 상태를 조회하거나 Instagram에서 직접 확인하세요. 불확실 상태를 수동으로 해제하는 기능은 넣지 않았습니다. 승인 원고를 수정하면 승인 및 이전 내보내기 연결이 해제됩니다.
-
-## 데이터와 실행
-
-원고: `data/projects.json`. 사진: `data/assets/`. 게시 패키지: `data/exports/`. 로그: `data/server.log`. 원고와 내보내기 폴더를 백업하면 됩니다. 이 앱은 OS 자격 증명을 읽지 않습니다. 프로젝트 폴더가 OneDrive에 있으므로 해당 폴더의 일반 파일은 사용자 OneDrive 설정에 따라 동기화될 수 있습니다.
-
-```text
-node server.mjs
-npm test
+```dotenv
+# 앱 실행용: Supabase → Connect → Transaction pooler (포트 6543), 끝에 ?pgbouncer=true
+DATABASE_URL="postgresql://postgres.PROJECT_REF:DB_PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres?pgbouncer=true"
+# 마이그레이션용: Session pooler 또는 Direct (포트 5432)
+DIRECT_URL="postgresql://postgres.PROJECT_REF:DB_PASSWORD@aws-0-REGION.pooler.supabase.com:5432/postgres"
+# 세션 쿠키 서명용 임의 문자열
+SESSION_SECRET="node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\" 로 만든 값"
 ```
 
-개발 테스트에는 별도 `PICK_DATA_DIR`과 `PICK_PORT`를 사용할 수 있습니다. 자동 게시 스케줄러는 포함하지 않았습니다. 매일 입력한 키워드를 기반으로 만들고 소유자의 검토·승인 뒤 게시하는 구조입니다.
+DB 비밀번호는 아래 명령으로 넣으면 화면에 `*` 로만 보이고, 특수문자도 URL 인코딩되어 안전하게 들어갑니다(**영문 입력 상태**에서 입력).
+```bash
+npm run db:password
+```
 
-## 디자인 참고 및 시안 근거
+### 3) 테이블 만들기 (Prisma 마이그레이션)
+```bash
+npm run db:deploy        # 저장소의 prisma/migrations 를 그대로 적용 (처음 설치)
+npm run db:check         # 연결 확인: 테이블별 행 수 출력
+```
+스키마를 바꿀 때는 `npm run db:migrate -- --name 변경이름` (= `prisma migrate dev`).
 
-- [PICK](https://www.instagram.com/_pick.kr/): 실제 프로필 로고 사용(현재 공개 150px 파일). 큰 출력용 원본 로고가 있으면 추후 교체 권장.
-- [요매거진](https://www.instagram.com/yomagazine_/): 사진 아래 짧은 문장, 일상적이면서 구체적인 호기심.
-- [글로우업](https://www.instagram.com/glowupmag/): 큰 사진, 흰 제목, 작은 카테고리/브랜드 표기.
-- [AoB](https://www.instagram.com/ageofband/): 음악 맥락, 절제된 타이포그래피와 어두운 사진 대비.
-- 세 계정의 실제 공개 피드를 확인해 구성 원칙을 참고했습니다. 사진·문구·로고를 복제하지 않았습니다. 크림/레드·모노크롬·코발트는 PICK용 제안 팔레트입니다.
-- [TEAM BABY 공식 음원 페이지](https://music.apple.com/us/album/team-baby/1242154383), [한국대중음악상 소개](https://koreanmusicawards.com/project/검정치마-team-baby-2/), [EVERYTHING 공식 유통 음원](https://www.youtube.com/watch?v=jb1FCdkadlo), [Love Is All 공식 유통 음원](https://www.youtube.com/watch?v=lOSF2vQDPiQ).
+### 4) 서버 실행
+```bash
+npm start                # http://127.0.0.1:4317
+npm run dev              # 파일이 바뀌면 자동 재시작
+```
+`PORT`, `HOST` 환경 변수로 바꿀 수 있습니다. 처음 접속하면 로그인 화면이 나오고, 회원가입 후 바로 쓸 수 있습니다.
 
-## 현재 한계
+### 5) (선택) 기존 로컬 데이터 가져오기
+이전 버전의 `data/projects.json` 원고를 내 계정의 매거진으로 옮깁니다. 같은 원고는 다시 실행해도 중복으로 들어가지 않습니다.
+```bash
+npm run db:import -- --dry-run                 # 미리보기 (DB 에 쓰지 않음)
+npm run db:import -- --email 내계정@example.com  # 먼저 회원가입한 계정으로
+```
 
-- AI 로그인과 실제 Instagram 연결은 계정 소유자의 설정이 남아 있습니다. 모의 어댑터 테스트는 실서비스 권한 검증을 대체하지 않습니다.
-- 사진 자동 수집은 원문이 이미지 다운로드를 허용하는 경우만 가능하며, 로그인 요구·만료 링크·차단 사이트는 직접 파일을 선택해야 합니다.
-- Instagram 직접 게시에는 별도 공개 이미지 호스팅 설정이 필요합니다. 연결 전에는 ZIP 다운로드 후 수동 게시가 가능합니다.
-- 인터넷이 없으면 기존 원고 편집과 카드 출력은 가능하지만 리서치와 게시에는 인터넷이 필요합니다.
+### 6) 테스트
+```bash
+npm test          # DB 없이 도는 단위·HTTP 테스트 (72개, 1초 이내)
+npm run test:db   # 실제 DB + HTTP 통합 테스트: 승인 흐름·소유자 검사 (테스트 계정은 끝나면 삭제)
+```
 
-## 카드 디자인 v2 — 2026-09-20
+### 그 밖의 명령
+| 명령 | 하는 일 |
+|---|---|
+| `npm run db:studio` | Prisma Studio 로 DB 보기 |
+| `npm run legacy` | 개편 전 1인용 앱 실행 (포트 4318, `data/projects.json` 사용) |
 
-카드 전용 서체를 맑은 고딕에서 Pretendard Variable로 교체했습니다. 제목 850 굵기, 좁은 자간, 짧은 행간을 적용하고 본문은 500 굵기로 분리했습니다. 노트 줄무늬·레코드 장식을 제거하고 사진과 타이포그래피 중심으로 재구성했습니다. 사진 표지는 핵심 한 줄을 라임색으로 강조합니다.
+---
 
-글꼴은 공식 [Pretendard 저장소](https://github.com/orioncactus/pretendard)의 v1.3.9 파일을 프로젝트에 포함했으며, SIL OFL 라이선스는 `public/assets/Pretendard-LICENSE.txt`에 함께 보관합니다. 출력 전에 글꼴 로드를 기다리므로 미리보기와 JPG의 글꼴이 일치합니다. 참고 매체가 정확히 이 글꼴을 사용한다고 주장하지 않으며, 확인한 피드의 굵기·배치·대비를 PICK에 맞게 적용한 선택입니다.
+## 2. 화면
 
-검정치마 시안은 ‘EVERYTHING에서 멈췄다면, 두 곡만 더’라는 표지에서 출발해 함께 들을 두 곡을 제안하는 흐름으로 개편했습니다. 자동 조사 요청문도 구체적인 첫 장의 약속 → 내용에서 약속 이행 → 선택하기 쉬운 마지막 질문 순서를 따릅니다. v2 검토용 JPG와 ZIP은 `deliverables/검정치마의 사랑노래-v2/`에 있습니다.
+| 화면 | 주소 | 내용 |
+|---|---|---|
+| 로그인 · 회원가입 | `/login.html`, `/signup.html` | 이메일 형식·비밀번호 8자 이상을 화면에서 먼저 안내하고 서버가 최종 검사. 로그인 후 원래 보던 화면으로 복귀 |
+| 매거진 목록 | `/magazines.html` | 기존 보관함(책장) UI. 검색창(제목·키워드) + 상태·종류 필터 + 내 매거진만, 📖 3D 펼쳐보기 |
+| 매거진 상세 | `/magazine.html?id=` | Canvas 카드 미리보기·썸네일·플립북, 캡션·출처·말투 점수. **본인 글일 때만** 수정·검토·내보내기·삭제 버튼 |
+| 매거진 등록 · 수정 | `/edit.html`, `/edit.html?id=` | 기존 카드 편집실(미리보기·필름스트립·탭·실시간 말투 검사). 카드 추가·삭제·순서, 사진 올리기, 출처, 자동 저장. 새 매거진 화면에 **AI로 초안 만들기** |
+| 검토 · 승인 | `/review.html?id=` | 단계 표시, **출처 확인 체크**, **상태 변경 버튼**, **승인 불가 사유**, 카드별 말투 지적 |
+| 내보내기 | `/export.html?id=` | 1080×1350 JPG 미리보기 → ZIP(카드 + caption.txt). 승인 전에는 잠금 |
+
+- 로그인하지 않고 위 화면(로그인·회원가입 제외)을 열면 서버가 `/login.html?next=원래주소` 로 보냅니다(`middlewares/pages.mjs`). API 가 401 을 받으면 화면도 로그인으로 이동합니다(`public/js/api.js`).
+- 휴대폰 폭(375px)에서도 가로 스크롤 없이 쓸 수 있습니다.
+
+---
+
+## 3. 데이터 모델 (`prisma/schema.prisma`)
+
+```
+User 1 ──< N Magazine 1 ──< N Card
+                      └──< N Source
+```
+
+| 모델 | 필드 |
+|---|---|
+| **User** | id, email(unique), password(bcrypt 해시), nickname, createdAt |
+| **Magazine** | id, title(≤60), keyword, type(`CURATION`\|`ISSUE`), template, status(`DRAFT`\|`REVIEW`\|`APPROVED`\|`PUBLISHED`), caption, createdAt, updatedAt, authorId → User |
+| **Card** | id, order, label, headline, body, footer, photoUrl, magazineId → Magazine (**onDelete: Cascade**) |
+| **Source** | id, outlet, title, url, verified(boolean), magazineId → Magazine (**onDelete: Cascade**) |
+
+요구사항 외에 추가한 필드 3개: 기존 Canvas 렌더러가 지금과 같은 카드를 그리는 데 필요합니다.
+`Card.layout`(cover·story·type·end), `Magazine.theme`(paper·midnight·cobalt), `Magazine.category`(카드 머리글 라벨).
+
+---
+
+## 4. API
+
+모든 오류는 `{ "message": "...", "code": "..." }` 형식입니다. 🔒 = 로그인 필요(아니면 401), 👤 = 작성자만(아니면 403 `NOT_OWNER`, 없으면 404).
+
+### 인증
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| POST | `/auth/signup` | `{email, password, nickname}` → 201 `{user}` (가입 후 바로 로그인). 중복 이메일 409 `EMAIL_TAKEN` |
+| POST | `/auth/login` | `{email, password}` → 200 `{user}`. 틀리면 401 `INVALID_CREDENTIALS` |
+| POST | `/auth/logout` 🔒 | 세션 삭제 + 쿠키 제거 |
+| GET | `/auth/me` 🔒 | 로그인 사용자 `{user}` |
+
+### 매거진
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/api/magazines` 🔒 | 목록. `?q=`(제목·키워드 검색) `?status=` `?type=` `?mine=1` `?page=` `?limit=` → `{total, page, limit, magazines[]}` (표지 카드 1장 + 개수, `isOwner`) |
+| GET | `/api/magazines/:id` 🔒 | 상세(카드 순서대로·출처·작성자·`isOwner`) |
+| POST | `/api/magazines` 🔒 | `{title, keyword, type?, template?, theme?, category?, caption?, cards[5~8], sources?}` → 201, 항상 DRAFT |
+| PUT | `/api/magazines/:id` 🔒👤 | 일부 필드 수정 → `{magazine, reverted}`. `status`·`cards` 는 받지 않음 |
+| DELETE | `/api/magazines/:id` 🔒👤 | 204 (카드·출처 함께 삭제) |
+
+### 카드
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| POST | `/api/magazines/:id/cards` 🔒👤 | 맨 뒤에 추가 → 201. 9장째는 400 `CARD_LIMIT` |
+| PUT | `/api/cards/:id` 🔒👤 | 수정 |
+| DELETE | `/api/cards/:id` 🔒👤 | 삭제 후 순서 재정렬. 4장이 되면 400 `CARD_LIMIT` |
+| PATCH | `/api/magazines/:id/cards/order` 🔒👤 | `{cardIds:[...]}` 전체 카드를 원하는 순서로. 빠지거나 남의 카드면 400 `INVALID_ORDER` |
+
+### 출처
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| POST | `/api/magazines/:id/sources` 🔒👤 | `{outlet, title, url}` → 201, `verified=false` 로 시작 |
+| PATCH | `/api/sources/:id` 🔒👤 | `{verified: true/false}`, 본문 없으면 토글 |
+| DELETE | `/api/sources/:id` 🔒👤 | 삭제 |
+
+### 고유 기능
+| 메서드 | 경로 | 설명 |
+|---|---|---|
+| GET | `/api/magazines/:id/voice` 🔒 | 말투 검사: 카드별 지적 + 전체 0~100점 + 다음 단계·승인 불가 사유 |
+| PATCH | `/api/magazines/:id/status` 🔒👤 | `{status}` 한 칸씩만. 400 `INVALID_TRANSITION` / `APPROVAL_BLOCKED` |
+| POST | `/api/magazines/:id/export` 🔒👤 | `{images:[JPEG data URL…]}` → ZIP(`01.jpg`…, `caption.txt`). APPROVED 미만 403 `EXPORT_NOT_ALLOWED`, 장수·형식·크기 오류 400 `INVALID_EXPORT` |
+| POST | `/api/uploads` 🔒 | 이미지 파일 그대로(Content-Type image/jpeg·png·webp) → 201 `{url:'/assets/<sha256>.jpg'}`. 실제 바이트로 형식 확인, 8MB 초과 413 |
+| GET | `/api/ai/status` 🔒 | 이 서버 PC 에서 쓸 수 있는 AI 모델 |
+| POST | `/api/ai/generate` 🔒 | `{keyword, model, count?, type?, template?, hook?}` → 202 `{job}`. 실행 중이면 409 `AI_BUSY`, 로그인 안 된 모델 503 `AI_UNAVAILABLE` |
+| GET | `/api/ai/jobs/:id` 🔒 | 작업 상태 `running`·`done(magazineId)`·`error` (만든 사람만, 아니면 404) |
+| GET | `/api/health` | 서버 동작 확인 |
+
+공통: 잘못된 JSON 400 `INVALID_JSON`, 입력 검증 실패 400 `VALIDATION_ERROR`, 잘못된 id 400 `INVALID_ID`, 없는 경로 404 `NOT_FOUND`, DB 연결 실패 503 `DB_UNAVAILABLE`, 다른 사이트에서 보낸 변경 요청 403 `FORBIDDEN_ORIGIN`.
+
+---
+
+## 5. 고유 기능 규칙 (서버가 강제)
+
+### 말투 검사기
+`shared/voice.js` 하나를 **서버(`GET /voice`)와 브라우저(편집 중 실시간)가 같이 import** 합니다. 광고식 권유("~해보세요"), 예고하는 소개문, 빈 수식어, 뜬 비유("결·온도·여운"), 번역투, 면책 문구, 발매일·크레딧 나열, 긴 본문, 제목↔본문 중복, 문장 끝이 전부 "~요"인 경우 등을 카드마다 찾아 고치는 법과 함께 보여 주고 0~100점을 매깁니다.
+
+### 검토·승인 흐름 (`shared/status-rules.js`)
+1. `DRAFT → REVIEW → APPROVED → PUBLISHED` **한 칸씩 앞으로만**. 건너뛰기·되돌리기·제자리는 400 `INVALID_TRANSITION`.
+2. **APPROVED 조건**: 출처 1개 이상 + 모든 출처 `verified=true`. 아니면 400 `APPROVAL_BLOCKED`(이유에 미확인 출처 이름). PUBLISHED 로 갈 때도 다시 확인.
+3. **APPROVED 에서 내용을 고치면 자동으로 REVIEW**: 제목·캡션·키워드·템플릿 등 매거진 정보, 카드 추가·수정·삭제·순서, 출처 추가·삭제·확인 해제. 응답의 `reverted: true` 로 화면이 안내. 값이 실제로 안 바뀐 저장은 승인을 풀지 않음.
+4. **PUBLISHED 는 수정 불가**(400 `PUBLISHED_LOCKED`), 삭제만 가능. 거부된 수정은 트랜잭션째 취소.
+5. 같은 함수를 검토 화면도 import 해서 "승인 불가 사유"를 미리 보여 주지만, 최종 판단은 항상 서버.
+
+### 카드 이미지 내보내기
+브라우저가 기존 `public/renderer.js`(`drawCard`, 템플릿 6종·얼굴 중심 크롭 포함)로 1080×1350 JPG 를 그리고 → 서버가 **작성자·APPROVED 이상(본문을 읽기 전에 확인)**, 장수 = 카드 수, 실제 JPEG 인지, **SOF 마커에서 읽은 크기가 1080×1350 인지** 검사 → `01.jpg…0N.jpg + caption.txt` ZIP 으로 돌려줍니다.
+
+### (확장) AI 원고 생성
+기존 `lib/` 의 웹 조사·원고 작성(Codex / Claude Code CLI) → 셀프 리뷰 → 서버 규칙 검사 → 카드 5~8장 맞춤 → 곡별 사진 매칭을 그대로 쓰고, 결과를 **요청한 사용자의 매거진(DRAFT, 출처는 모두 미확인)** 으로 저장합니다. 한 번에 하나씩 실행합니다.
+> **주의**: 이 서버 PC 에 로그인된 Codex(ChatGPT) / Claude Code **구독 CLI** 를 씁니다(API 키·추가 과금 없음). 다른 서버에 배포하면 AI 생성만 동작하지 않고, 나머지 기능은 그대로 동작합니다. Claude 는 `claude auth login`, ChatGPT 는 `AI 연결.cmd` 로 로그인합니다.
+
+---
+
+## 6. 요구사항 ↔ 구현 위치
+
+| 요구사항 | 구현 위치 |
+|---|---|
+| Express 서버 (기존 직접 라우팅 전환) | `app.mjs`(앱 팩토리), `server.mjs`(실행), 기존 서버는 `legacy/server.mjs` |
+| Prisma + Supabase | `prisma/schema.prisma`, `prisma/migrations/`, `services/prisma.mjs` |
+| passport-local + express-session + bcrypt | `config/passport.mjs`, `config/session.mjs`, `services/user.service.mjs`(bcrypt 12) |
+| HTML·CSS·JS + fetch | `public/*.html`, `public/js/*.js`(`api.js` 의 fetch 래퍼), `public/css/studio.css` |
+| User·Magazine·Card·Source, 1:N, Cascade | `prisma/schema.prisma` |
+| projects.json → DB 마이그레이션 스크립트 | `scripts/migrate-json.mjs`, `lib/legacy-map.mjs` (`npm run db:import`) |
+| 폴더 분리 routes/controllers/middlewares/validators/services/prisma | 같은 이름 폴더. routes = 경로 연결만, controllers = 요청·응답, services = DB 접근 |
+| 공통 에러 `{message, code}` + 404 | `middlewares/error.mjs`, `lib/http-error.mjs` |
+| 입력 검증 (이메일, 비밀번호 8자, 제목 1~60, 카드 5~8, url, status·type) | `validators/auth.validator.mjs`, `validators/magazine.validator.mjs`, `validators/common.mjs`, `lib/rules.mjs` |
+| isLoggedIn / isOwner (남의 데이터 403) | `middlewares/auth.mjs` |
+| 인증 API 4개 | `routes/auth.routes.mjs`, `controllers/auth.controller.mjs` |
+| 매거진 API (검색·필터·mine) | `routes/magazine.routes.mjs`, `controllers/magazine.controller.mjs`, `services/magazine.service.mjs` |
+| 카드 API (순서 변경 포함) | `routes/card.routes.mjs`, `controllers/card.controller.mjs`, `services/card.service.mjs` |
+| 출처 API (verified 토글) | `routes/source.routes.mjs`, `controllers/source.controller.mjs`, `services/source.service.mjs` |
+| 말투 검사기 공용 모듈 + `GET /voice` | `shared/voice.js`, `shared/magazine-content.js`, `controllers/review.controller.mjs` |
+| 검토·승인 흐름 `PATCH /status`, 승인 조건, 수정 시 REVIEW | `shared/status-rules.js`, `services/magazine.service.mjs`(`changeStatus`, `beginEdit`/`finishEdit`) |
+| 카드 이미지 ZIP 내보내기 (APPROVED 이상, 아니면 403) | `controllers/export.controller.mjs`, `lib/export.mjs`, `lib/images.mjs`, `public/js/export.js` |
+| (확장) AI 원고 생성 → DB 저장 | `services/ai.service.mjs`, `controllers/ai.controller.mjs`, `routes/ai.routes.mjs`, `public/js/edit.js` |
+| 화면 6개 + 비로그인 리다이렉트 + 본인 글 아닌 경우 버튼 숨김 | `public/*.html`, `middlewares/pages.mjs`, `public/js/magazine.js`(`isOwner`) |
+| 기존 템플릿 6종·Canvas 렌더러·3D 책넘김 재사용 | `public/templates.js`, `public/template-renderer.js`, `public/renderer.js`, `public/js/flipbook.js`(기존 `insta-ui.js` 의 openBook), `public/js/cards.js` |
+| .env 에만 비밀 정보, .gitignore | `.env.example`, `.gitignore`, `scripts/set-db-password.mjs` |
+| 테스트: 승인 흐름 규칙·소유자 검사 | `tests/status.test.mjs`, `tests/magazine.test.mjs`(isOwner), `tests/db/flow.db.test.mjs`(실제 DB) |
+
+---
+
+## 7. 폴더 구조
+
+```
+app.mjs, server.mjs          Express 앱 / 실행
+config/                      passport, session 설정
+routes/                      경로 연결만
+controllers/                 요청 → 서비스 호출 → 응답
+services/                    DB 접근(Prisma), 사진 저장, AI 작업
+middlewares/                 auth(isLoggedIn·isOwner), error, security, pages
+validators/                  입력 검증
+shared/                      서버·브라우저 공용: 말투 검사기, 승인 규칙, DB→원고 변환
+lib/                         규칙 상수, 에러, 내보내기, 기존 AI·렌더링 관련 모듈
+prisma/                      스키마, 마이그레이션
+public/                      화면(HTML·CSS·JS), 렌더러, 템플릿, 폰트
+scripts/                     DB 확인, 비밀번호 입력, projects.json 가져오기
+tests/                       단위·HTTP 테스트 (tests/db: 실제 DB 통합 테스트)
+legacy/                      개편 전 1인용 앱(서버·화면·README) — npm run legacy
+```
+
+---
+
+## 8. 보안 메모
+
+- 비밀번호는 bcrypt 해시만 저장하고 응답·세션·로그에 싣지 않습니다. 없는 이메일과 틀린 비밀번호는 같은 메시지·비슷한 시간으로 응답합니다.
+- 세션 쿠키: `httpOnly`, `SameSite=Lax`, 운영(`NODE_ENV=production`)에서는 `secure`. 로그인할 때 세션 id 를 새로 발급합니다.
+- 상태를 바꾸는 요청은 같은 출처(Origin)만 허용합니다(CSRF 방어). CSP·`X-Frame-Options` 등 기존 보안 헤더 유지.
+- 사용자 입력은 화면에 넣을 때 모두 escape 합니다. 사진은 확장자가 아니라 실제 바이트로 형식을 확인하고, 내용 해시를 파일 이름으로 씁니다.
+- DB 접속 정보·세션 시크릿은 `.env` 에만 둡니다. DB 연결 오류는 접속 주소를 응답·로그에 남기지 않습니다.
+- Supabase 프로젝트는 **Data API 를 끈 상태**로 만들었습니다(테이블이 공개 REST API 로 노출되지 않음).
+
+## 9. 알려진 한계
+
+- **세션 저장소는 메모리(MemoryStore)** 라서 서버를 재시작하면 다시 로그인해야 합니다. 서버 한 대에서 쓰는 수업용 구성입니다.
+- AI 작업 상태도 메모리에 있어서, 서버 재시작 시 진행 중이던 작업 정보는 사라집니다(만들어진 매거진은 DB 에 남음).
+- 업로드한 사진은 서버 디스크(`data/assets/`)에 저장됩니다. 여러 서버로 배포하려면 Supabase Storage 같은 공용 저장소가 필요합니다.
+- `npm audit` 의 high 3건은 개발용 `prisma` CLI 의 설정 로더(`deepmerge-ts`)에서 나오며, 앱 실행 코드에는 포함되지 않습니다. 고치려면 Prisma 7 로 올려야 해서(설정 방식 변경) 6 을 유지했습니다.
+- 프로젝트 폴더가 OneDrive 안에 있으면 `node_modules` 까지 동기화되어 느려질 수 있습니다.
+
+## 10. 개편하면서 빠지거나 바뀐 기능
+
+[`docs/changes-from-legacy.md`](docs/changes-from-legacy.md) 에 정리했습니다. 개편 전 버전은 git `main` 브랜치 첫 커밋, `backup/2026-11-04-before-final/`, `npm run legacy` 로 그대로 볼 수 있습니다.
+
+## 출처 · 라이선스
+
+- 카드 글꼴: [Pretendard](https://github.com/orioncactus/pretendard) v1.3.9 (SIL OFL, `public/assets/Pretendard-LICENSE.txt`)
+- 얼굴 인식 크롭: MediaPipe Tasks Vision (`public/vendor/mediapipe/LICENSE.txt`)
+- 카드 사진은 사용 권한을 확인한 뒤 게시하세요. 공개 열람 가능과 재사용 허가는 다릅니다.
