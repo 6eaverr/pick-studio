@@ -94,6 +94,22 @@ a.archive-card { display: block; color: inherit; }
 .source-item [data-del] { position: absolute; top: 8px; right: 8px; font-size: 12px; padding: 4px 8px; }
 .source-item a { padding-right: 48px; overflow-wrap: anywhere; }
 
+/* AI 초안 패널 */
+.ai-panel { margin: 0 36px 16px; padding: 16px 18px; background: linear-gradient(135deg, #fdf0f6, #f3f0ff 60%, #eef6ff); border-color: #ead9f2; }
+.ai-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 12px; }
+.ai-head b { font-size: 15px; color: var(--ink); }
+.ai-head small { color: var(--muted); font-size: 12px; }
+.ai-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.ai-form .field { margin: 0; flex: 0 1 auto; }
+.ai-form .field.ai-keyword { flex: 1 1 240px; }
+.ai-form .field input, .ai-form .field select { background: var(--surface); }
+.ai-form .primary { padding: 10px 18px; }
+.ai-panel .caption-hint { margin: 10px 0 0; font-size: 12px; color: var(--muted); }
+.ai-progress { margin: 0; font-size: 13px; color: var(--ink-2); }
+.progress i.indeterminate { width: 40%; animation: indeterminate 1.4s ease-in-out infinite; }
+@keyframes indeterminate { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
+@media (prefers-reduced-motion: reduce) { .progress i.indeterminate { animation: none; width: 100%; opacity: .5; } }
+
 /* ── 검토 · 승인 ── */
 .review-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .stepper { display: flex; gap: 6px; list-style: none; margin: 0 0 18px; padding: 0; counter-reset: step; }
@@ -150,7 +166,7 @@ a.archive-card { display: block; color: inherit; }
   .page, .page-heading { padding-left: 16px; padding-right: 16px; }
   .page-heading { padding-top: 22px; }
   .detail-layout { grid-template-columns: minmax(0, 1fr); }
-  .workspace-title, .editor-layout, .notice { margin-left: 16px; margin-right: 16px; }
+  .workspace-title, .editor-layout, .notice, .ai-panel { margin-left: 16px; margin-right: 16px; }
   .workspace-title { flex-wrap: wrap; }
   .editor-layout { grid-template-columns: minmax(0, 1fr); }
   .stepper { flex-wrap: wrap; }

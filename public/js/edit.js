@@ -49,6 +49,12 @@ async function boot() {
     mag = { ...magazine, cards: magazine.cards.map(c => ({ ...c, key: key() })), sources: magazine.sources.map(s => ({ ...s, key: key() })) };
     start();
     if (params.get('created')) { toast('매거진을 만들었어요. 이제부터는 자동 저장됩니다.'); history.replaceState(null, '', `?id=${mag.id}`); }
+    if (params.get('ai')) {
+      let warnings = [];
+      try { warnings = JSON.parse(sessionStorage.getItem('pick-ai-warnings') || '[]'); sessionStorage.removeItem('pick-ai-warnings'); } catch { /* 없음 */ }
+      toast(['AI 초안이 준비됐어요. 문장을 다듬고, 검토 화면에서 출처를 확인하세요.', ...warnings].join(' '));
+      history.replaceState(null, '', `?id=${mag.id}`);
+    }
   } catch (err) {
     if (err.status !== 401) showError(content, err.status === 404 ? '삭제되었거나 없는 매거진입니다.' : err.message);
   }
@@ -63,6 +69,7 @@ function start() {
       <div class="detail-actions" id="topActions"></div>
     </div>
     <p class="notice" id="notice" hidden></p>
+    ${createMode ? '<section class="ai-panel panel" id="aiPanel" aria-labelledby="aiTitle"></section>' : ''}
     <div class="editor-layout">
       <section class="preview panel" aria-label="카드 미리보기">
         <div class="panel-toolbar"><span class="post-user"><span class="ring"><img src="/assets/pick-logo.jpg" alt=""></span><span><b>_pick.kr</b><small>카드 미리보기 · 1080 × 1350 · 4:5</small></span></span>
@@ -103,7 +110,76 @@ function start() {
   renderTop();
   renderInspector();
   renderPreview({ all: true });
+  if (createMode) setupAi();
   addEventListener('beforeunload', e => { if (hasUnsaved()) { e.preventDefault(); e.returnValue = ''; } });
+}
+
+// ── AI 로 초안 만들기 (새 매거진 화면) ──
+// 서버 PC 의 Claude Code / Codex 구독으로 조사·작성·셀프 리뷰·사진 매칭 → 결과는 내 매거진(DRAFT)으로 저장
+const AI_JOB_KEY = 'pick-ai-job';
+const store = { get: k => { try { return sessionStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch { /* 저장 불가 환경 */ } } };
+
+async function setupAi() {
+  const panel = $('#aiPanel');
+  panel.innerHTML = `<div class="ai-head"><b id="aiTitle">✦ AI로 초안 만들기</b><small>키워드 하나로 조사·원고·사진까지. 1~5분 걸려요.</small></div><p class="muted" id="aiState">AI 연결을 확인하고 있습니다…</p>`;
+  const running = store.get(AI_JOB_KEY);
+  if (running) return pollAi(running);
+  let status;
+  try { status = await api('/api/ai/status'); } catch (err) { $('#aiState').textContent = err.message; return; }
+  const usable = status.models.filter(m => m.available);
+  panel.innerHTML = `<div class="ai-head"><b id="aiTitle">✦ AI로 초안 만들기</b><small>키워드 하나로 조사·원고·사진까지. 1~5분 걸려요.</small></div>
+    <div class="ai-form">
+      <label class="field ai-keyword">키워드<input id="aiKeyword" maxlength="160" placeholder="예: 실리카겔 입문, 펜타포트 라인업" value="${esc(mag.keyword)}"></label>
+      <label class="field">AI 모델<select id="aiModel">${status.models.map(m => `<option value="${m.id}" ${m.available ? '' : 'disabled'}>${esc(m.label)}${m.available ? '' : ' (로그인 필요)'}</option>`).join('')}</select></label>
+      <label class="field">카드<select id="aiCount">${[5, 6, 7, 8].map(n => `<option value="${n}"${n === 6 ? ' selected' : ''}>${n}장</option>`).join('')}</select></label>
+      <label class="field">종류<select id="aiType"><option value="CURATION">큐레이션</option><option value="ISSUE">이슈</option></select></label>
+      <label class="field">후킹<select id="aiHook"><option value="balanced">적당</option><option value="bold">강하게</option><option value="calm">담백</option></select></label>
+      <button class="primary" id="aiStart" ${usable.length ? '' : 'disabled'}>AI로 만들기</button>
+    </div>
+    <p class="caption-hint" id="aiState">${usable.length
+      ? `템플릿은 지금 고른 디자인(${esc(TEMPLATE_OPTIONS.find(([v]) => v === mag.template)?.[1] || mag.template)})으로 만듭니다. 만든 원고는 초안이며, 출처는 검토 화면에서 직접 확인해야 승인할 수 있어요.`
+      : '이 서버 PC에 AI가 연결되어 있지 않습니다. 터미널에서 <b>claude auth login</b>(Claude) 또는 <b>AI 연결.cmd</b>(ChatGPT)로 로그인한 뒤 새로고침하세요. 직접 작성은 아래 편집실에서 할 수 있어요.'}</p>`;
+  if (usable.length) $('#aiModel').value = usable[0].id;
+  $('#aiStart').onclick = action(async () => {
+    const keyword = $('#aiKeyword').value.trim();
+    if (!keyword) throw new Error('키워드를 입력하세요.');
+    const { job } = await api('/api/ai/generate', {
+      method: 'POST',
+      body: { keyword, model: $('#aiModel').value, count: Number($('#aiCount').value), type: $('#aiType').value, hook: $('#aiHook').value, template: mag.template },
+    });
+    store.set(AI_JOB_KEY, job.id);
+    pollAi(job.id);
+  });
+}
+
+async function pollAi(jobId) {
+  const panel = $('#aiPanel');
+  panel.innerHTML = `<div class="ai-head"><b id="aiTitle">✦ AI가 원고를 만들고 있어요</b><small>이 화면을 닫아도 서버에서 계속 진행됩니다.</small></div>
+    <p class="ai-progress" id="aiState" role="status" aria-live="polite">준비 중…</p><div class="progress"><i class="indeterminate"></i></div>`;
+  for (;;) {
+    let job;
+    try { ({ job } = await api(`/api/ai/jobs/${jobId}`)); } catch (err) {
+      store.set(AI_JOB_KEY, null);
+      if (err.status === 404) return setupAi(); // 서버 재시작 등으로 작업이 사라짐
+      $('#aiState').textContent = err.message; return;
+    }
+    if (job.status === 'running') {
+      $('#aiState').textContent = job.message;
+      await new Promise(r => setTimeout(r, 2500));
+      continue;
+    }
+    store.set(AI_JOB_KEY, null);
+    if (job.status === 'done') {
+      store.set('pick-ai-warnings', JSON.stringify(job.warnings || []));
+      touched = false;
+      location.replace(`/edit.html?id=${job.magazineId}&ai=1`);
+      return;
+    }
+    panel.querySelector('.progress')?.remove();
+    $('#aiState').innerHTML = `<span style="color:var(--heart)">${esc(job.error)}</span> <button class="secondary" id="aiRetry">다시 설정</button>`;
+    $('#aiRetry').onclick = () => setupAi();
+    return;
+  }
 }
 
 function renderTop() {

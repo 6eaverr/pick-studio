@@ -108,3 +108,8 @@ test('사진 업로드·내보내기도 로그인 필요 → 401', async () => {
   assert.equal(up.status, 401);
   assert.equal((await post('/api/magazines/1/export', { images: [] })).status, 401);
 });
+
+test('AI 원고 생성도 로그인 필요 → 401', async () => {
+  assert.equal((await fetch(`${base}/api/ai/status`)).status, 401);
+  assert.equal((await post('/api/ai/generate', { keyword: 'k', model: 'claude-sonnet' })).status, 401);
+});
