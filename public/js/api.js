@@ -36,7 +36,7 @@ export async function api(path, { method = 'GET', body, redirectOn401 = true } =
 // 카드 사진 올리기: 파일을 그대로 본문으로 보냄 → { url: '/assets/…' }
 export async function uploadImage(file) {
   if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new ApiError(400, 'INVALID_IMAGE', 'JPG, PNG, WEBP 이미지만 올릴 수 있습니다.');
-  if (file.size > 8 * 1024 * 1024) throw new ApiError(400, 'INVALID_IMAGE', '이미지는 8MB 이하여야 합니다.');
+  if (file.size > 4 * 1024 * 1024) throw new ApiError(400, 'INVALID_IMAGE', '이미지는 4MB 이하여야 합니다(사진 크기를 줄여 주세요).');
   const res = await fetch('/api/uploads', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': file.type }, body: file });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401) { location.href = loginUrl(); }

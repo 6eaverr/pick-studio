@@ -55,9 +55,15 @@ async function defaultDeps() {
   };
 }
 
-export function createAiService(depsFactory = defaultDeps) {
+// 배포 서버(Vercel)에는 Codex / Claude Code CLI 가 없으므로 AI 생성을 끄고 이유를 알려 줌
+export const HOSTED_REASON = '배포된 사이트(Vercel)에서는 AI 원고 생성을 쓸 수 없습니다. 프로젝트를 PC에서 npm start 로 실행하면 사용할 수 있어요. 직접 작성은 그대로 됩니다.';
+
+export function createAiService(depsFactory = defaultDeps, { hosted = !!process.env.VERCEL } = {}) {
   const jobs = new Map();
   let depsPromise, statusCache;
+  if (hosted) {
+    statusCache = { at: Infinity, value: { hosted: true, reason: HOSTED_REASON, models: AI_MODELS.map(m => ({ ...m, available: false })) } };
+  }
   const deps = () => (depsPromise ??= depsFactory());
   const view = ({ userId, ...job }) => job;
 
@@ -99,7 +105,7 @@ export function createAiService(depsFactory = defaultDeps) {
       const status = await this.status();
       const model = status.models.find(m => m.id === params.model);
       if (!model?.available) {
-        throw new HttpError(503, 'AI_UNAVAILABLE', model?.provider === 'codex'
+        throw new HttpError(503, 'AI_UNAVAILABLE', status.hosted ? HOSTED_REASON : model?.provider === 'codex'
           ? 'Codex(ChatGPT) 로그인이 필요합니다. 서버 PC 에서 AI 연결.cmd 를 실행하세요.'
           : 'Claude 구독 로그인이 필요합니다. 서버 PC 터미널에서 claude auth login 을 실행하세요.');
       }

@@ -58,11 +58,12 @@ npm run dev              # 파일이 바뀌면 자동 재시작
 ```bash
 npm run db:import -- --dry-run                 # 미리보기 (DB 에 쓰지 않음)
 npm run db:import -- --email 내계정@example.com  # 먼저 회원가입한 계정으로
+npm run db:assets                              # data/assets 의 카드 사진을 DB 로 (배포 사이트에서도 보이게)
 ```
 
 ### 6) 테스트
 ```bash
-npm test          # DB 없이 도는 단위·HTTP 테스트 (72개, 1초 이내)
+npm test          # DB 없이 도는 단위·HTTP 테스트 (76개, 1초 이내)
 npm run test:db   # 실제 DB + HTTP 통합 테스트: 승인 흐름·소유자 검사 (테스트 계정은 끝나면 삭제)
 ```
 
@@ -71,6 +72,19 @@ npm run test:db   # 실제 DB + HTTP 통합 테스트: 승인 흐름·소유자 
 |---|---|
 | `npm run db:studio` | Prisma Studio 로 DB 보기 |
 | `npm run legacy` | 개편 전 1인용 앱 실행 (포트 4318, `data/projects.json` 사용) |
+
+### 7) Vercel 배포 (무료 Hobby 플랜)
+같은 Express 앱을 Vercel 서버리스 함수로 올립니다(`api/index.mjs`, `vercel.json`). 화면·정적 파일(`public/`)은 Vercel CDN 이 직접 주고, API·사진(`/assets`)·공용 모듈(`/shared`)은 Express 함수가 처리합니다.
+
+1. GitHub 저장소를 Vercel 에 Import (Framework Preset: **Other** — `vercel.json` 이 설정을 담고 있어 그대로 둠)
+2. Environment Variables 에 `DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET` 입력 (`.env` 내용을 통째로 붙여 넣으면 자동으로 나뉨)
+3. Deploy. 빌드 때 `prisma generate` 가 실행되고, Supabase 리전(도쿄)과 가까운 `hnd1` 에서 실행됩니다.
+
+배포 환경에서 달라지는 점:
+- **로그인 세션·사진은 DB 에 저장**됩니다(`sessions`·`assets` 테이블). 서버가 요청마다 바뀌어도 로그인이 유지됩니다. 로컬도 같은 방식이라 서버를 재시작해도 로그인이 유지됩니다.
+- **AI 원고 생성은 꺼집니다**(배포 서버에는 Codex·Claude CLI 가 없음). 화면에 이유가 표시되고, PC 에서 `npm start` 로 실행하면 그대로 쓸 수 있습니다.
+- 요청 크기 한도(4.5MB) 때문에 **사진은 4MB 이하**, 내보내기는 카드 JPG 를 보낼 때 전체가 크면 품질을 자동으로 낮춥니다.
+- 로그인 안 된 상태에서 보호된 화면을 열면, 서버 대신 화면 스크립트가 로그인으로 보냅니다(정적 파일은 CDN 이 주기 때문). `/` 는 서버가 그대로 판단합니다.
 
 ---
 
@@ -151,7 +165,7 @@ User 1 ──< N Magazine 1 ──< N Card
 | GET | `/api/magazines/:id/voice` 🔒 | 말투 검사: 카드별 지적 + 전체 0~100점 + 다음 단계·승인 불가 사유 |
 | PATCH | `/api/magazines/:id/status` 🔒👤 | `{status}` 한 칸씩만. 400 `INVALID_TRANSITION` / `APPROVAL_BLOCKED` |
 | POST | `/api/magazines/:id/export` 🔒👤 | `{images:[JPEG data URL…]}` → ZIP(`01.jpg`…, `caption.txt`). APPROVED 미만 403 `EXPORT_NOT_ALLOWED`, 장수·형식·크기 오류 400 `INVALID_EXPORT` |
-| POST | `/api/uploads` 🔒 | 이미지 파일 그대로(Content-Type image/jpeg·png·webp) → 201 `{url:'/assets/<sha256>.jpg'}`. 실제 바이트로 형식 확인, 8MB 초과 413 |
+| POST | `/api/uploads` 🔒 | 이미지 파일 그대로(Content-Type image/jpeg·png·webp) → 201 `{url:'/assets/<sha256>.jpg'}`. 실제 바이트로 형식 확인, 4MB 초과 413 (DB `assets` 테이블에 저장) |
 | GET | `/api/ai/status` 🔒 | 이 서버 PC 에서 쓸 수 있는 AI 모델 |
 | POST | `/api/ai/generate` 🔒 | `{keyword, model, count?, type?, template?, hook?}` → 202 `{job}`. 실행 중이면 409 `AI_BUSY`, 로그인 안 된 모델 503 `AI_UNAVAILABLE` |
 | GET | `/api/ai/jobs/:id` 🔒 | 작업 상태 `running`·`done(magazineId)`·`error` (만든 사람만, 아니면 404) |
@@ -207,6 +221,7 @@ User 1 ──< N Magazine 1 ──< N Card
 | 화면 6개 + 비로그인 리다이렉트 + 본인 글 아닌 경우 버튼 숨김 | `public/*.html`, `middlewares/pages.mjs`, `public/js/magazine.js`(`isOwner`) |
 | 기존 템플릿 6종·Canvas 렌더러·3D 책넘김 재사용 | `public/templates.js`, `public/template-renderer.js`, `public/renderer.js`, `public/js/flipbook.js`(기존 `insta-ui.js` 의 openBook), `public/js/cards.js` |
 | .env 에만 비밀 정보, .gitignore | `.env.example`, `.gitignore`, `scripts/set-db-password.mjs` |
+| (추가) Vercel 배포: DB 세션·DB 사진·서버리스 진입점 | `api/index.mjs`, `vercel.json`, `config/session-store.mjs`, `services/asset.service.mjs`, `scripts/migrate-assets.mjs` |
 | 테스트: 승인 흐름 규칙·소유자 검사 | `tests/status.test.mjs`, `tests/magazine.test.mjs`(isOwner), `tests/db/flow.db.test.mjs`(실제 DB) |
 
 ---
@@ -243,9 +258,9 @@ legacy/                      개편 전 1인용 앱(서버·화면·README) — 
 
 ## 9. 알려진 한계
 
-- **세션 저장소는 메모리(MemoryStore)** 라서 서버를 재시작하면 다시 로그인해야 합니다. 서버 한 대에서 쓰는 수업용 구성입니다.
-- AI 작업 상태도 메모리에 있어서, 서버 재시작 시 진행 중이던 작업 정보는 사라집니다(만들어진 매거진은 DB 에 남음).
-- 업로드한 사진은 서버 디스크(`data/assets/`)에 저장됩니다. 여러 서버로 배포하려면 Supabase Storage 같은 공용 저장소가 필요합니다.
+- AI 원고 생성은 서버 PC 에 로그인된 CLI 를 쓰므로 **로컬 실행에서만** 됩니다(배포 사이트에서는 꺼짐). 작업 상태는 메모리에 있어서, 서버 재시작 시 진행 중이던 작업 정보는 사라집니다(만들어진 매거진은 DB 에 남음).
+- 사진은 DB(`assets` 테이블)에 저장합니다. 수업 규모에는 충분하지만, 사진이 많아지면 Supabase Storage 같은 파일 저장소로 옮기는 편이 낫습니다(Supabase 무료 DB 500MB).
+- Supabase 무료 플랜은 **7일 동안 접속이 없으면 일시정지**됩니다. 대시보드에서 Restore 하면 다시 켜집니다.
 - `npm audit` 의 high 3건은 개발용 `prisma` CLI 의 설정 로더(`deepmerge-ts`)에서 나오며, 앱 실행 코드에는 포함되지 않습니다. 고치려면 Prisma 7 로 올려야 해서(설정 방식 변경) 6 을 유지했습니다.
 - 프로젝트 폴더가 OneDrive 안에 있으면 `node_modules` 까지 동기화되어 느려질 수 있습니다.
 

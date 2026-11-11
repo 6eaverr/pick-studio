@@ -16,7 +16,8 @@
     "db:import": "node --env-file-if-exists=.env scripts/migrate-json.mjs",
     "postinstall": "prisma generate",
     "db:password": "node scripts/set-db-password.mjs",
-    "test:db": "node --env-file-if-exists=.env --test --test-timeout=60000 tests/db/*.test.mjs"
+    "test:db": "node --env-file-if-exists=.env --test --test-timeout=60000 tests/db/*.test.mjs",
+    "db:assets": "node --env-file-if-exists=.env scripts/migrate-assets.mjs"
   },
   "engines": {
     "node": ">=22.9"

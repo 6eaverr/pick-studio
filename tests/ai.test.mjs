@@ -109,3 +109,13 @@ test('AI 요청 검증: 키워드·모델 필수, 장수 5~8, 허용값', () => 
   }
   assert.throws(() => checkJobId({ params: { id: '../../etc' } }), { code: 'VALIDATION_ERROR' });
 });
+
+test('배포 서버(Vercel)에서는 AI 생성이 꺼지고 이유를 알려 줌 (CLI 를 실행하지 않음)', async () => {
+  let loaded = false;
+  const ai = createAiService(async () => { loaded = true; return fakeDeps(); }, { hosted: true });
+  const s = await ai.status();
+  assert.equal(s.hosted, true);
+  assert.ok(s.models.every(m => !m.available));
+  await assert.rejects(ai.start(7, params), { status: 503, code: 'AI_UNAVAILABLE', message: /Vercel/ });
+  assert.equal(loaded, false);
+});

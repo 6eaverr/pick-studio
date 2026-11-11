@@ -1,5 +1,6 @@
 import session from 'express-session';
 import { randomBytes } from 'node:crypto';
+import { PrismaSessionStore } from './session-store.mjs';
 
 export const SESSION_COOKIE = 'pick.sid';
 
@@ -12,11 +13,18 @@ function resolveSecret(secret) {
   return randomBytes(32).toString('hex');
 }
 
-// 세션 저장소: express-session 기본 MemoryStore (서버 재시작 시 로그인 초기화, 단일 서버 수업용)
-export function createSession({ secret = process.env.SESSION_SECRET } = {}) {
+// 세션 저장소: DB(sessions 테이블). DATABASE_URL 이 없으면(단위 테스트) 메모리 저장소.
+// SESSION_STORE=memory 로 강제로 메모리 저장소를 쓸 수도 있습니다.
+export function defaultStore() {
+  if (!process.env.DATABASE_URL || process.env.SESSION_STORE === 'memory') return undefined;
+  return new PrismaSessionStore();
+}
+
+export function createSession({ secret = process.env.SESSION_SECRET, store = defaultStore() } = {}) {
   return session({
     name: SESSION_COOKIE,
     secret: resolveSecret(secret),
+    store,
     resave: false,
     saveUninitialized: false, // 로그인 전에는 세션·쿠키를 만들지 않음
     cookie: {

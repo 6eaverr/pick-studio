@@ -42,7 +42,10 @@ describe('DB 통합: 승인 흐름 · 소유자 검사', { skip: !hasDb && 'DATA
   });
 
   after(async () => {
-    await prisma?.user.deleteMany({ where: { email: { startsWith: 'qa-', endsWith: `-${stamp}@pick.test` } } });
+    const qa = await prisma?.user.findMany({ where: { email: { startsWith: 'qa-', endsWith: `-${stamp}@pick.test` } }, select: { id: true } }) || [];
+    // 테스트 계정의 로그인 세션(sessions 테이블)도 함께 정리
+    if (qa.length) await prisma.session.deleteMany({ where: { OR: qa.map(u => ({ data: { contains: `"passport":{"user":${u.id}}` } })) } });
+    await prisma?.user.deleteMany({ where: { id: { in: qa.map(u => u.id) } } });
     await prisma?.$disconnect();
     server?.close();
   });

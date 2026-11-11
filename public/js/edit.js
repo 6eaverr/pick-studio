@@ -138,7 +138,7 @@ async function setupAi() {
     </div>
     <p class="caption-hint" id="aiState">${usable.length
       ? `템플릿은 지금 고른 디자인(${esc(TEMPLATE_OPTIONS.find(([v]) => v === mag.template)?.[1] || mag.template)})으로 만듭니다. 만든 원고는 초안이며, 출처는 검토 화면에서 직접 확인해야 승인할 수 있어요.`
-      : '이 서버 PC에 AI가 연결되어 있지 않습니다. 터미널에서 <b>claude auth login</b>(Claude) 또는 <b>AI 연결.cmd</b>(ChatGPT)로 로그인한 뒤 새로고침하세요. 직접 작성은 아래 편집실에서 할 수 있어요.'}</p>`;
+      : status.hosted ? esc(status.reason) : '이 서버 PC에 AI가 연결되어 있지 않습니다. 터미널에서 <b>claude auth login</b>(Claude) 또는 <b>AI 연결.cmd</b>(ChatGPT)로 로그인한 뒤 새로고침하세요. 직접 작성은 아래 편집실에서 할 수 있어요.'}</p>`;
   if (usable.length) $('#aiModel').value = usable[0].id;
   $('#aiStart').onclick = action(async () => {
     const keyword = $('#aiKeyword').value.trim();
@@ -263,7 +263,7 @@ function renderInspector() {
       ${c.photoUrl ? `<img class="photo-preview" src="${esc(c.photoUrl)}" alt="카드 ${selected + 1} 사진">` : '<div class="tip">사진 없이 타이포그래피만으로도 카드를 만들 수 있어요.</div>'}
       <div class="two-buttons" style="margin-top:14px"><button class="secondary" id="pickPhoto">내 사진 선택</button><button class="quiet" id="removePhoto" ${c.photoUrl ? '' : 'disabled'}>사진 제거</button></div>
       <input type="file" id="photoFile" accept="image/jpeg,image/png,image/webp" hidden>
-      <p class="caption-hint">JPG·PNG·WEBP, 8MB 이하. 이 서버에 올린 사진만 카드에 쓸 수 있습니다(내보내기 이미지에 그대로 들어감). 게시 전 사진 사용 권한을 확인하세요.</p>`;
+      <p class="caption-hint">JPG·PNG·WEBP, 4MB 이하. 이 서버에 올린 사진만 카드에 쓸 수 있습니다(내보내기 이미지에 그대로 들어감). 게시 전 사진 사용 권한을 확인하세요.</p>`;
     $('#pickPhoto').onclick = () => $('#photoFile').click();
     $('#photoFile').onchange = action(async e => {
       const file = e.target.files[0]; if (!file) return;

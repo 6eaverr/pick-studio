@@ -2,7 +2,8 @@
 // User 1:N Magazine, Magazine 1:N Card, Magazine 1:N Source
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"] // rhel: Vercel 서버리스 환경
 }
 
 datasource db {
@@ -87,4 +88,27 @@ model Source {
 
   @@index([magazineId])
   @@map("sources")
+}
+
+// ── 배포(Vercel) 지원: 서버가 요청마다 새로 뜨고 디스크에 파일을 둘 수 없으므로 DB 에 보관 ──
+
+// 로그인 세션 (express-session 저장소, config/session-store.mjs)
+model Session {
+  sid       String   @id
+  data      String
+  expiresAt DateTime
+
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// 업로드·AI 수집 카드 사진. name = "<sha256>.<jpg|png|webp>", 주소는 /assets/<name>
+model Asset {
+  name      String   @id
+  mime      String
+  size      Int
+  bytes     Bytes
+  createdAt DateTime @default(now())
+
+  @@map("assets")
 }

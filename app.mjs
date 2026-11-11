@@ -18,6 +18,8 @@ const jsonBody = express.json({ limit: '1mb' });
 export function createApp({ sessionSecret } = {}) {
   const app = express();
   app.disable('x-powered-by');
+  // Vercel 은 HTTPS 를 프록시가 받아 넘겨 주므로, 프록시 헤더를 믿어야 secure 쿠키·출처 검사가 https 로 동작
+  if (process.env.VERCEL) app.set('trust proxy', 1);
 
   app.use(securityHeaders);
   app.use(sameOrigin);

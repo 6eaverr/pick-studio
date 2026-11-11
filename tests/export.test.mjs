@@ -50,8 +50,10 @@ test('파일 이름: 윈도에서 못 쓰는 문자 제거', () => {
   assert.equal(exportFileName({ id: 4, title: '' }), 'pick-4.zip');
 });
 
-test('사진 업로드: 이미지가 아니면 400 INVALID_IMAGE (파일 저장 안 함)', () => {
-  assert.throws(() => saveImage(Buffer.from('hello')), { status: 400, code: 'INVALID_IMAGE' });
-  assert.throws(() => saveImage(Buffer.alloc(0)), { code: 'INVALID_IMAGE' });
-  assert.throws(() => saveImage({}), { code: 'INVALID_IMAGE' });
+test('사진 업로드: 이미지가 아니거나 4MB 초과면 400 INVALID_IMAGE (DB 저장 전에 거부)', async () => {
+  await assert.rejects(saveImage(Buffer.from('hello')), { status: 400, code: 'INVALID_IMAGE' });
+  await assert.rejects(saveImage(Buffer.alloc(0)), { code: 'INVALID_IMAGE' });
+  await assert.rejects(saveImage({}), { code: 'INVALID_IMAGE' });
+  const big = Buffer.alloc(4 * 1024 * 1024 + 1); big.set([0xff, 0xd8, 0xff]);
+  await assert.rejects(saveImage(big), { message: /4MB/ });
 });

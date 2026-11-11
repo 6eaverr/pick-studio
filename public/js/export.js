@@ -10,6 +10,9 @@ await mountLayout('mine');
 const content = $('#content');
 const id = new URLSearchParams(location.search).get('id');
 const QUALITY = 0.92;
+// 배포 서버(Vercel) 요청 한도 4.5MB 안에 들어오도록: 전체가 크면 JPG 품질을 단계적으로 낮춤
+const MAX_BODY_CHARS = 4_000_000;
+const QUALITY_STEPS = [0.92, 0.85, 0.78, 0.7, 0.6, 0.5];
 
 const download = (blob, name) => {
   const a = document.createElement('a');
@@ -17,7 +20,7 @@ const download = (blob, name) => {
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
-const toBlob = canvas => new Promise((resolve, reject) => canvas.toBlob(b => (b ? resolve(b) : reject(new Error('JPG로 바꾸지 못했습니다.'))), 'image/jpeg', QUALITY));
+const toBlob = (canvas, quality = QUALITY) => new Promise((resolve, reject) => canvas.toBlob(b => (b ? resolve(b) : reject(new Error('JPG로 바꾸지 못했습니다.'))), 'image/jpeg', quality));
 const toDataUrl = blob => new Promise((resolve, reject) => { const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsDataURL(blob); });
 
 if (!/^\d+$/.test(id || '')) showError(content, '주소에 매거진 번호가 없습니다.');
@@ -81,7 +84,12 @@ async function prepare(m) {
   btn.onclick = action(async () => {
     btn.textContent = 'JPG 만드는 중…';
     const images = [];
-    for (const p of pages) images.push(await toDataUrl(await toBlob(p)));
+    for (const quality of QUALITY_STEPS) {
+      images.length = 0;
+      for (const p of pages) images.push(await toDataUrl(await toBlob(p, quality)));
+      if (images.reduce((n, s) => n + s.length, 0) <= MAX_BODY_CHARS) break;
+    }
+    if (images.reduce((n, s) => n + s.length, 0) > MAX_BODY_CHARS) throw new Error('카드 이미지가 너무 커서 한 번에 보낼 수 없습니다. 사진을 더 작은 파일로 바꿔 보세요.');
     btn.textContent = '서버에서 확인 중…';
     const res = await fetch(`/api/magazines/${m.id}/export`, {
       method: 'POST', credentials: 'same-origin',
