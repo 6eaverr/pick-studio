@@ -2,6 +2,8 @@
 
 고급웹프로그래밍 기말 프로젝트. 1인용 로컬 편집 프로그램이던 PICK Studio(인스타그램 음악 매거진 카드뉴스 편집실)를 **여러 사용자가 가입해 각자 매거진을 만들고, 검토·승인 후 카드 이미지를 내보내는 웹 서비스**로 바꿨습니다.
 
+**🔗 배포 주소: https://pick-studio-swart.vercel.app** (Vercel · 회원가입 후 바로 사용. AI 원고 생성만 PC 실행 전용)
+
 - 서버: Node.js 22+ · Express 5 (routes / controllers / services / middlewares / validators 분리)
 - DB: Prisma 6 + Supabase(PostgreSQL)
 - 인증: passport-local + express-session, 비밀번호는 bcrypt 해시
