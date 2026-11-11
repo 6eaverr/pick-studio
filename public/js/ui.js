@@ -46,6 +46,26 @@ export function action(fn) {
   };
 }
 
+// 로그인·회원가입 칸을 빈 칸으로 시작 (브라우저가 저장된 이메일·비밀번호를 미리 채우지 않게)
+// - HTML 에서 readonly 로 시작 → 브라우저 자동 채우기 대상에서 빠짐
+// - 칸을 누르거나(Tab 포함) 터치하면 그 칸만 입력 가능
+// - 그래도 채워진 값은 사용자가 입력을 시작하기 전까지만 비움
+export function startEmpty(form) {
+  const fields = [...form.querySelectorAll('input')];
+  let userTyped = false;
+  form.addEventListener('keydown', () => { userTyped = true; }, { once: true });
+  for (const f of fields) {
+    const unlock = () => { f.readOnly = false; };
+    f.addEventListener('focus', unlock);
+    f.addEventListener('pointerdown', unlock);
+  }
+  const clear = () => { if (!userTyped) fields.forEach(f => { if (f !== document.activeElement) f.value = ''; }); };
+  clear();
+  setTimeout(clear, 150);
+  setTimeout(clear, 600);
+  addEventListener('pageshow', e => { if (e.persisted) { userTyped = false; clear(); } }); // 뒤로 가기로 돌아왔을 때
+}
+
 export function showError(container, message) {
   container.innerHTML = `<div class="empty-state panel"><b>불러오지 못했습니다</b><p>${esc(message)}</p><a class="secondary" href="/magazines.html">목록으로</a></div>`;
 }

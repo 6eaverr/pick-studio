@@ -13,20 +13,21 @@
     <a class="brand" href="/login.html" aria-label="PICK Studio"><span class="ring"><img src="/assets/pick-logo.jpg" alt="PICK 로고"></span><span>pick<span class="brand-dot">.</span><small>EDITORIAL STUDIO</small></span></a>
     <h1>회원가입</h1>
     <p class="lead">가입하면 바로 매거진을 만들 수 있어요.</p>
-    <form id="signupForm" novalidate>
+    <!-- 빈 칸으로 시작: 브라우저 자동 채우기를 막기 위해 처음엔 readonly, 칸을 누르면 입력 가능 (js/ui.js startEmpty) -->
+    <form id="signupForm" novalidate autocomplete="off">
       <p class="form-error" id="formError" role="alert" hidden></p>
       <label class="field">이메일
-        <input id="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com">
+        <input id="email" type="email" autocomplete="off" required maxlength="254" placeholder="you@example.com" readonly>
       </label>
       <label class="field">닉네임
-        <input id="nickname" autocomplete="nickname" required maxlength="20" placeholder="1~20자">
+        <input id="nickname" autocomplete="off" required maxlength="20" placeholder="1~20자" readonly>
       </label>
       <label class="field">비밀번호
-        <input id="password" type="password" autocomplete="new-password" required minlength="8">
+        <input id="password" type="password" autocomplete="new-password" required minlength="8" readonly>
         <small>8자 이상</small>
       </label>
       <label class="field">비밀번호 확인
-        <input id="password2" type="password" autocomplete="new-password" required minlength="8">
+        <input id="password2" type="password" autocomplete="new-password" required minlength="8" readonly>
       </label>
       <button class="primary" type="submit" id="submitBtn">가입하기</button>
     </form>

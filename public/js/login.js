@@ -1,6 +1,7 @@
 import { api, safeNext } from './api.js';
-import { $ } from './ui.js';
+import { $, startEmpty } from './ui.js';
 
+startEmpty($('#loginForm'));
 const next = safeNext(new URLSearchParams(location.search).get('next'));
 $('#signupLink').href = `/signup.html${next !== '/magazines.html' ? `?next=${encodeURIComponent(next)}` : ''}`;
 

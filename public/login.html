@@ -13,13 +13,14 @@
     <a class="brand" href="/login.html" aria-label="PICK Studio"><span class="ring"><img src="/assets/pick-logo.jpg" alt="PICK 로고"></span><span>pick<span class="brand-dot">.</span><small>EDITORIAL STUDIO</small></span></a>
     <h1>로그인</h1>
     <p class="lead">PICK 매거진 편집실에 오신 걸 환영해요.</p>
-    <form id="loginForm" novalidate>
+    <!-- 빈 칸으로 시작: 브라우저 자동 채우기를 막기 위해 처음엔 readonly, 칸을 누르면 입력 가능 (js/ui.js startEmpty) -->
+    <form id="loginForm" novalidate autocomplete="off">
       <p class="form-error" id="formError" role="alert" hidden></p>
       <label class="field">이메일
-        <input id="email" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com">
+        <input id="email" type="email" autocomplete="off" required maxlength="254" placeholder="you@example.com" readonly>
       </label>
       <label class="field">비밀번호
-        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <input id="password" type="password" autocomplete="off" required readonly>
       </label>
       <button class="primary" type="submit" id="submitBtn">로그인</button>
     </form>
